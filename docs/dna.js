@@ -2,10 +2,10 @@
 (function (root) {
   var COMP = { A: 'T', T: 'A', G: 'C', C: 'G', N: 'N', R: 'Y', Y: 'R', S: 'S', W: 'W', K: 'M', M: 'K', B: 'V', V: 'B', D: 'H', H: 'D' };
 
-  // FASTA 첫 줄, 공백, 숫자 제거 후 대문자
+  // FASTA 첫 줄, GenBank의 ORIGIN·// 줄, 공백, 숫자 제거 후 대문자
   function clean(raw) {
     return String(raw || '').split(/\r?\n/)
-      .filter(function (l) { return l.trim().charAt(0) !== '>'; })
+      .filter(function (l) { var x = l.trim(); return x.charAt(0) !== '>' && !/^(ORIGIN|\/\/)/i.test(x); })
       .join('').replace(/[\s0-9]/g, '').toUpperCase();
   }
   function check(s) {
