@@ -6,7 +6,7 @@
 |---|---|---|
 | Part 1 | 이론: 프라이머, 역상보, Tm, 2차 구조 (PCR·qPCR은 짧게 복습) | 30–40분 |
 | Part 2 | 실습: 핀볼 → NCBI → Primer-BLAST → 점검 → Tm → 서열 뷰어 → PCR 시뮬레이션 | 40분 내외 |
-| 심화 (선택) | gDNA 오염을 구분할 수 있는 설계인지 확인 | 15분 |
+| 심화 (수업 후 각자) | gDNA 오염을 구분할 수 있는 설계인지 확인 | – |
 
 **준비물**: 노트북, 인터넷. 가입하거나 설치할 것은 없습니다.
 **제출물**: [기록지](worksheet.md)의 필수 항목을 갖춘 보고서를 사이버캠퍼스에 제출
@@ -130,7 +130,7 @@ DNA 중합효소의 규칙은 두 가지입니다.
 ```
 
 - 접히거나 서로 붙은 프라이머는 주형에 가지 못합니다.
-- 3′ 끝끼리 붙으면 중합효소가 그 자리에서 연장해 버려 짧은 **primer-dimer**가 생깁니다. qPCR에서는 SYBR이 여기에도 빛나서 Ct와 melt curve를 망칩니다.
+- 3′ 끝끼리 붙으면 중합효소가 그 자리에서 연장해 버려 짧은 **primer-dimer**가 생깁니다. qPCR에서는 SYBR이 여기에도 빛나서 Ct와 Tm 곡선을 망칩니다.
 - **제한효소 자리**: GAATTC(EcoRI)처럼 대부분의 인식 서열은 역상보가 자기 자신과 같은 **회문(palindrome)** 입니다. 프라이머 안에 있으면 같은 프라이머끼리 그 6 bp가 그대로 짝을 이룹니다. 6 bp 하나로 실패하는 경우는 드물지만, 피할 수 있으면 피합니다.
 
 ### 1-9. 오늘 쓰는 서열: RefSeq mRNA
@@ -145,7 +145,7 @@ NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mR
 |---|---|---|
 | **유전체 DNA(gDNA) 오염** | RNA를 뽑을 때 gDNA가 조금 섞입니다. 프라이머가 gDNA에도 붙으면 발현량이 아닌데도 신호가 나옵니다 | 두 프라이머 사이에 **인트론(intron)**이 들어가게 하거나(gDNA 산물이 더 길거나 안 나옴), 한 프라이머가 **엑손(exon) 경계에 걸치게** 합니다(gDNA에는 그 서열이 없음). Primer-BLAST의 Exon junction span / Intron inclusion 옵션이 이 일을 합니다 |
 | 프라이머 이합체 | SYBR은 이합체에도 빛납니다 | 3′ 끝이 서로 붙지 않는 쌍. NTC(주형 없는 대조군)로 확인 |
-| 산물이 두 개 이상 | melt curve에 봉우리가 둘 | Primer-BLAST에서 다른 유전자 산물이 없는지 확인. melt curve 봉우리 하나 |
+| 산물이 두 개 이상 | Tm 곡선에 봉우리가 둘 | Primer-BLAST에서 다른 유전자 산물이 없는지 확인. Tm 곡선 봉우리 하나 |
 | transcript variant | 유전자 하나에 mRNA가 여러 종류일 수 있음 | 모든 variant에 공통인 구간에 설계 (심화) |
 | 효율 | 사이클마다 정확히 2배가 아니면 Ct로 양을 비교할 수 없음 | 실제 실험에서 희석 계열로 효율 90–110%인지 확인 (오늘은 안 함) |
 
@@ -243,7 +243,7 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
 
 1. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)에 ① FASTA, ② Forward, ③ Reverse를 넣고 결합 온도는 60 °C 그대로 **PCR 돌리기**를 누릅니다.
 2. **가상 젤**에서 cDNA 레인에 밴드가 하나인지, NTC 레인이 깨끗한지 봅니다. 밴드 크기가 Step 7의 앰플리콘과 같아야 합니다.
-3. **melt curve**에서 봉우리가 하나인지, 산물의 Tm이 몇 도인지 봅니다.
+3. **Tm 곡선**(melt curve)에서 봉우리가 하나인지, 산물의 Tm이 몇 도인지 봅니다.
 4. 결합 온도를 **70 °C**로 바꿔 다시 돌립니다. 밴드가 어떻게 되는가? 이번에는 **50 °C**로. 어떤 경고가 뜨는가?
 5. Reverse 칸에 **역상보로 바꾸기 전 서열**(윗가닥 그대로, Primer-BLAST 결과의 Reverse 위치를 서열 뷰어에서 읽은 것)을 넣고 돌립니다. 왜 산물이 생기지 않는가? (Forward와 Reverse 칸을 서로 바꿔 넣는 것은 괜찮습니다. 시험관 안에는 이름표가 없습니다.)
 
@@ -253,9 +253,9 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
 
 ---
 
-## 심화 (선택). gDNA가 섞여도 구분할 수 있나?
+## 심화 (수업 후 각자). gDNA가 섞여도 구분할 수 있나?
 
-1-10에서 본 gDNA 오염 문제를 내 프라이머로 직접 확인합니다.
+1-10에서 본 gDNA 오염 문제를 내 프라이머로 직접 확인합니다. 수업 시간에는 하지 않습니다. 오늘 배정되는 유전자는 모두 엑손이 3개 이상이라 누구나 할 수 있습니다.
 
 1. **gDNA 서열 가져오기**: [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene/)에서 내 유전자를 검색해 Homo sapiens 항목을 엽니다. **Genomic regions, transcripts, and products** 그림 오른쪽 위 **Go to nucleotide: FASTA**를 누르면 유전자 구간의 유전체 서열이 열립니다. 전부 복사합니다.
 2. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)에 ① mRNA FASTA, ② gDNA FASTA, ③④ 내 프라이머를 넣고 **엑손 찾기**를 누릅니다.
@@ -263,18 +263,5 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
    - 두 프라이머가 **같은 엑손** → gDNA 산물이 같은 크기. 구분 불가.
    - 사이에 **인트론** → gDNA 산물이 인트론만큼 길다(또는 너무 길어 안 나옴). 구분 가능.
    - 한 프라이머가 **엑손 경계에 걸침** → gDNA에 붙지 않음. 가장 확실.
-4. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)의 **심화 · gDNA 서열도 넣기**를 열고 같은 gDNA를 넣어 돌립니다. gDNA 레인에 어떤 밴드가 나오는지, melt curve에서 구분되는지 봅니다.
+4. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)의 **심화 · gDNA 서열도 넣기**를 열고 같은 gDNA를 넣어 돌립니다. gDNA 레인에 어떤 밴드가 나오는지, Tm 곡선에서 구분되는지 봅니다.
 5. 구분이 안 되는 설계였다면, Primer-BLAST로 돌아가 **Intron inclusion**(Primer pair must be separated by at least one intron on the corresponding genomic DNA)에 체크하고 다시 돌려 새 쌍을 받아 2–4를 반복합니다.
-
----
-
-## 자주 하는 실수
-
-| 실수 | 바르게 |
-|---|---|
-| RefSeq 번호에 버전을 빼먹음 (`NM_000518`) | `NM_000518.5`처럼 점 뒤까지 |
-| Primer-BLAST의 Reverse를 한 번 더 역상보로 바꿈 | 결과에 나온 서열이 이미 5′→3′. 그대로 쓴다 |
-| 상보 서열을 Reverse로 씀 | 상보 + 역순 = 역상보 |
-| 앰플리콘이 너무 짧거나 김 | qPCR은 70–150 bp |
-| "Tm 60 °C"라고만 씀 | 어느 계산법(조건)으로 구했는지 함께 적는다 |
-| 시뮬레이션에서 산물이 안 생김 | Reverse를 역상보로 안 바꿔서 두 프라이머가 같은 방향을 보고 있음 |

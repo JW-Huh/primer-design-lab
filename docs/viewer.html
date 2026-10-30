@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<base target="_blank">
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(a&&a.host&&a.host!==location.host){a.target='_blank';a.rel='noopener';}});</script>
 <title>서열 뷰어</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -73,7 +73,7 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
 
     <h2 style="margin-top:22px">qPCR 조건 (SYBR Green, 2단계 표준 조건)</h2>
     <table class="prog" id="prog"></table>
-    <p class="hint">qPCR 산물은 짧아서(70–150 bp) 결합과 연장을 60 °C 한 단계로 합칩니다. 그래서 두 프라이머의 Tm이 60 °C 근처여야 하고, 조건표는 프라이머에 따라 바뀌지 않습니다. 마지막 melt curve에서 봉우리가 하나면 산물이 한 종류일 가능성이 높습니다. 시약마다 초기 변성 시간이 다르니(2–10분) 제품 설명서를 따릅니다.</p>
+    <p class="hint">qPCR 산물은 짧아서(70–150 bp) 결합과 연장을 60 °C 한 단계로 합칩니다. 그래서 두 프라이머의 Tm이 60 °C 근처여야 하고, 조건표는 프라이머에 따라 바뀌지 않습니다. 마지막 Tm 곡선(melt curve)에서 봉우리가 하나면 산물이 한 종류일 가능성이 높습니다. 시약마다 초기 변성 시간이 다르니(2–10분) 제품 설명서를 따릅니다.</p>
 
     <h2 style="margin-top:22px">두 가닥 서열</h2>
     <div class="legend">
@@ -159,7 +159,7 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
       '<tr><td>초기 변성 (효소 활성화)</td><td class="m">95 °C</td><td class="m">2분</td><td>1회</td></tr>' +
       '<tr><td>변성</td><td class="m">95 °C</td><td class="m">15초</td><td rowspan="2">40회 반복</td></tr>' +
       '<tr><td><b>결합 + 연장</b> (형광 측정)</td><td class="m"><b>60 °C</b></td><td class="m"><b>1분</b></td></tr>' +
-      '<tr><td>Melt curve</td><td class="m">65 → 95 °C</td><td class="m">0.5 °C씩</td><td>1회</td></tr>';
+      '<tr><td>Tm 곡선 (melt curve)</td><td class="m">65 → 95 °C</td><td class="m">0.5 °C씩</td><td>1회</td></tr>';
 
     $('amp').textContent = t.substring(fa, rb + 1);
     $('out').hidden = false;

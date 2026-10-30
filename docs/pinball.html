@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<base target="_blank">
+<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(a&&a.host&&a.host!==location.host){a.target='_blank';a.rel='noopener';}});</script>
 <title>유전자 핀볼</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,7 +203,7 @@
           '<a class="btn" href="https://www.ncbi.nlm.nih.gov/nuccore/' + g.acc + '" target="_blank" rel="noopener">NCBI에서 서열 보기</a>' +
           '<button class="btn ghost" type="button" id="copyAcc">번호 복사</button>' +
         '</div>' +
-        '<p class="hint" style="margin-top:12px">기록지에 유전자 기호와 RefSeq 번호(점 뒤 숫자까지)를 적으세요. 버튼 없이 직접 찾아가는 방법은 <a href="https://github.com/JW-Huh/primer-design-lab/blob/main/week10/ncbi-guide.md" target="_blank" rel="noopener">NCBI 찾아가기 안내</a>에 있어요.</p>' +
+        '<p class="hint" style="margin-top:12px">RefSeq 번호는 점 뒤 버전까지입니다. 버튼 없이 직접 찾아가는 방법은 <a href="https://github.com/JW-Huh/primer-design-lab/blob/main/week10/ncbi-guide.md" target="_blank" rel="noopener">NCBI 찾아가기 안내</a>에 있어요.</p>' +
       '</div>';
     document.getElementById('copyAcc').addEventListener('click', function (e) {
       var b = e.currentTarget;
