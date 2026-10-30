@@ -14,7 +14,7 @@
 
 ## 웹 도구
 
-https://jw-huh.github.io/primer-design-lab/ — 설치 없이 바로 열립니다. 이 안내문을 보면서 쓰려면 새 창으로 여세요 (Ctrl+클릭, Mac은 ⌘+클릭).
+https://jw-huh.github.io/primer-design-lab/ — 설치 없이 바로 열립니다.
 
 | 도구 | 하는 일 |
 |---|---|
