@@ -42,7 +42,7 @@ svg text { font-family: var(--font-mono); }
   </div>
 
   <h1>PCR 시뮬레이션</h1>
-  <p class="lead">내 프라이머로 PCR을 돌리면 어떤 밴드가 나올지 미리 봅니다. 프라이머가 붙는 자리를 모두 찾아 산물을 만들고, 결합 온도·2차 구조·산물 길이를 반영해 가상 젤과 녹는점 곡선으로 보여 줍니다.</p>
+  <p class="lead">내 프라이머로 PCR을 돌리면 어떤 밴드가 나올지 미리 봅니다. 프라이머가 붙는 자리를 모두 찾아 산물을 만들고, 결합 온도·2차 구조·산물 길이를 반영해 가상 젤과 melt curve로 보여 줍니다.</p>
 
   <section class="panel">
     <label class="field" for="c">① cDNA 서열 (mRNA의 FASTA를 통째로)</label>
@@ -56,7 +56,7 @@ svg text { font-family: var(--font-mono); }
       </div>
     </div>
     <details class="opt" id="gopt">
-      <summary>심화 · gDNA 서열도 넣기 (유전체 DNA가 섞였을 때 어떤 밴드가 나오는지 보기)</summary>
+      <summary>심화 · gDNA 서열도 넣기 (유전체 DNA가 섞였을 때 어떤 밴드가 나오는지 보기. gDNA에는 엑손(exon) 사이에 인트론(intron)이 있어 산물 크기가 달라질 수 있음)</summary>
       <textarea id="g" spellcheck="false" style="min-height:90px; margin-top:8px" placeholder="같은 유전자의 유전체(genomic) 서열 FASTA. 구하는 방법은 엑손 찾기 페이지 아래 안내를 보세요."></textarea>
     </details>
     <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">PCR 돌리기</button><button class="btn ghost" id="ex" type="button">HBB 예시 넣기</button></div>
@@ -73,7 +73,7 @@ svg text { font-family: var(--font-mono); }
 
     <div class="figs">
       <div class="fig"><h3>가상 젤 (2% agarose)</h3><div id="gel"></div></div>
-      <div class="fig"><h3>녹는점 곡선 (melt curve)</h3><div id="melt"></div><p class="hint">SYBR Green은 이중가닥 DNA에만 빛나므로, 산물 종류마다 봉우리가 하나씩 생깁니다. 짧은 프라이머 이합체는 낮은 온도에서, 긴 산물은 높은 온도에서 녹습니다.</p></div>
+      <div class="fig"><h3>Melt curve</h3><div id="melt"></div><p class="hint">SYBR Green은 이중가닥 DNA에만 빛나므로, 산물 종류마다 그 Tm에 봉우리가 하나씩 생깁니다. 짧은 프라이머 이합체는 낮은 온도에서, 긴 산물은 높은 온도에서 떨어집니다.</p></div>
     </div>
 
     <div id="verdict" class="res-list"></div>
@@ -86,7 +86,7 @@ svg text { font-family: var(--font-mono); }
       <li>결합 온도가 Tm보다 1 °C 넘게 높아지면 붙는 양이 줄고, 5 °C 이상 높으면 붙지 않는 것으로 봅니다. Tm은 Primer-BLAST 조건의 nearest-neighbor 값입니다.</li>
       <li>2단계 qPCR(60 °C 1분)에서는 약 1 kb까지 다 복제됩니다. 1–3 kb는 희미하게, 3 kb 넘으면 산물이 나오지 않는 것으로 봅니다.</li>
       <li>3′ 끝이 4 bp 이상 서로 붙는 프라이머 이합체는 모든 레인(NTC 포함)에 짧은 밴드로 나타납니다. 머리핀 줄기가 6 bp 이상이거나 3′ 끝을 포함하면 효율이 절반으로 떨어진다고 봅니다.</li>
-      <li>산물의 녹는 온도는 길이와 GC 비율로 추정합니다 (81.5 + 0.41·GC% − 675/길이 + 염 보정). 실제 기기 값과 1–2 °C 다를 수 있습니다.</li>
+      <li>산물의 Tm은 길이와 GC 비율로 추정합니다 (81.5 + 0.41·GC% − 675/길이 + 염 보정). 실제 기기 값과 1–2 °C 다를 수 있습니다.</li>
     </ul>
     <p class="hint">NTC(no template control)는 주형을 넣지 않은 대조군입니다. 여기서 밴드나 봉우리가 보이면 프라이머 이합체입니다.</p>
   </section>
@@ -190,7 +190,7 @@ svg text { font-family: var(--font-mono); }
     var cd = lanes[0], visible = function (b) { return b.inten > 0.05 && !b.dimer; };
     var cBands = cd.bands.filter(visible), gl = g ? lanes[1] : null, gBands = gl ? gl.bands.filter(visible) : [];
     function list(bs) { return bs.length ? bs.map(function (b) { return b.size + ' bp' + (b.inten < 0.5 ? ' (희미)' : ''); }).join(', ') : '없음'; }
-    var s = box('cDNA 레인', list(cBands), cBands.length === 1 ? 'F/R 결합 ' + (cBands[0].from + 1) + '–' + (cBands[0].to + 1) + ' · 녹는점 약 ' + cBands[0].tm.toFixed(0) + ' °C' : cBands.length > 1 ? '산물이 ' + cBands.length + '개' : '');
+    var s = box('cDNA 레인', list(cBands), cBands.length === 1 ? 'F/R 결합 ' + (cBands[0].from + 1) + '–' + (cBands[0].to + 1) + ' · Tm 약 ' + cBands[0].tm.toFixed(0) + ' °C' : cBands.length > 1 ? '산물이 ' + cBands.length + '개' : '');
     if (gl) {
       var gs = '';
       if (!gBands.length) gs = cd.bands.length && products(g, prs).length ? '산물이 너무 길어(3 kb 초과) 2단계 qPCR에서 안 나옴' : '프라이머가 gDNA에 연속으로 붙는 자리가 없음';
@@ -212,7 +212,7 @@ svg text { font-family: var(--font-mono); }
     if (dim) { ok = false; msg('verdict', 'err', 'NTC에 프라이머 이합체 밴드가 있어요. SYBR qPCR에서는 이것도 형광으로 잡혀 Ct를 망칩니다. 3′ 끝이 서로 붙지 않는 쌍으로 바꾸세요.'); }
     if (gl) {
       if (!gBands.length) msg('verdict', 'ok', 'gDNA가 섞여도 산물이 나오지 않아요. 유전체 DNA 오염을 걱정하지 않아도 되는 설계입니다.');
-      else if (cBands.length === 1 && gBands[0].size !== cBands[0].size) msg('verdict', 'ok', 'gDNA가 섞이면 ' + gBands[0].size + ' bp 밴드가 따로 나와요. 젤이나 녹는점 곡선에서 cDNA 산물(' + cBands[0].size + ' bp)과 구분할 수 있습니다.');
+      else if (cBands.length === 1 && gBands[0].size !== cBands[0].size) msg('verdict', 'ok', 'gDNA가 섞이면 ' + gBands[0].size + ' bp 밴드가 따로 나와요. 젤이나 melt curve에서 cDNA 산물(' + cBands[0].size + ' bp)과 구분할 수 있습니다.');
       else msg('verdict', 'warn', 'gDNA 산물이 cDNA 산물과 같은 크기예요. 유전체 DNA가 섞이면 구분할 수 없습니다. 두 프라이머가 서로 다른 엑손에 있거나, 하나가 엑손 경계에 걸치도록 고르세요 (엑손 찾기 페이지).');
     }
     if (ok) msg('verdict', 'ok', 'cDNA에서 ' + cBands[0].size + ' bp 산물 하나, NTC 깨끗. qPCR에 쓸 수 있는 설계입니다.');
@@ -255,7 +255,7 @@ svg text { font-family: var(--font-mono); }
     var width = 520, height = 220, left = 40, right = 16, top = 24, bottom = 36, pw = width - left - right, ph = height - top - bottom;
     var T0 = 65, T1 = 95;
     function xOf(t) { return left + (t - T0) / (T1 - T0) * pw; }
-    var o = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="100%" style="max-width:' + width + 'px" role="img" aria-label="녹는점 곡선">';
+    var o = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="100%" style="max-width:' + width + 'px" role="img" aria-label="melt curve">';
     o += '<line x1="' + left + '" y1="' + (top + ph) + '" x2="' + (left + pw) + '" y2="' + (top + ph) + '" stroke="#d9e1ea"/>';
     for (var t = T0; t <= T1; t += 5) o += '<line x1="' + xOf(t) + '" y1="' + (top + ph) + '" x2="' + xOf(t) + '" y2="' + (top + ph + 4) + '" stroke="#9aa6b4"/><text x="' + xOf(t) + '" y="' + (top + ph + 16) + '" text-anchor="middle" font-size="11" fill="#5b6878">' + t + '</text>';
     o += '<text x="' + (left + pw / 2) + '" y="' + (height - 4) + '" text-anchor="middle" font-size="11" fill="#5b6878">온도 (°C)</text>';

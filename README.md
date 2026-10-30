@@ -10,7 +10,7 @@
 |---|---|
 | [10주차 따라하기](week10/README.md) | Part 1 이론 → Part 2 실습. 위에서부터 순서대로 읽으며 따라오세요 |
 | [NCBI 찾아가기 안내](week10/ncbi-guide.md) | 유전자 서열 직접 찾는 법, RefSeq · CDS 뜻 |
-| [기록지](week10/worksheet.md) | 실습하면서 채우는 기록지. 제출 형식은 맨 아래 "제출 안내" |
+| [기록지](week10/worksheet.md) | 보고서에 꼭 들어갈 항목과 제출 형식 |
 
 ## 웹 도구
 
@@ -22,8 +22,8 @@ https://jw-huh.github.io/primer-design-lab/ — 설치 없이 바로 열립니�
 | [프라이머 점검](https://jw-huh.github.io/primer-design-lab/check.html) | 반복 서열, 머리핀, 이합체, 회문(제한효소 자리) 확인 |
 | [Tm 계산기](https://jw-huh.github.io/primer-design-lab/tm.html) | Wallace, 기본 GC 식, nearest-neighbor 세 가지로 Tm 계산 |
 | [서열 뷰어](https://jw-huh.github.io/primer-design-lab/viewer.html) | 두 가닥 서열에 프라이머 결합 위치, 앰플리콘, qPCR 조건 표시 |
-| [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html) | 결합 온도·2차 구조·산물 길이를 반영한 가상 젤과 녹는점 곡선. gDNA 레인(심화) |
-| [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html) | mRNA와 gDNA를 맞대어 엑손·인트론 찾기, 프라이머 사이 인트론과 gDNA 산물 크기 (심화) |
+| [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html) | 결합 온도·2차 구조·산물 길이를 반영한 가상 젤과 melt curve. gDNA 레인(심화) |
+| [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html) | mRNA와 gDNA를 맞대어 엑손(exon)·인트론(intron) 찾기, 프라이머 사이 인트론과 gDNA 산물 크기 (심화) |
 | [역상보](https://jw-huh.github.io/primer-design-lab/revcomp.html) | 상보 · 역순 · 역상보 변환 |
 
 ## 수업에서 쓰는 무료 도구

@@ -47,7 +47,7 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
   </div>
 
   <h1>엑손 찾기</h1>
-  <p class="lead">mRNA 서열과 유전체(gDNA) 서열을 맞대어 엑손과 인트론을 찾습니다. 내 프라이머가 어느 엑손에 있는지, 두 프라이머 사이에 인트론이 있어서 gDNA 산물이 더 길어지는지 알 수 있습니다.</p>
+  <p class="lead">mRNA 서열과 유전체(gDNA) 서열을 맞대어 엑손(exon)과 인트론(intron)을 찾습니다. 내 프라이머가 어느 엑손에 있는지, 두 프라이머 사이에 인트론이 있어서 gDNA 산물이 더 길어지는지 알 수 있습니다.</p>
 
   <section class="panel">
     <div class="grid" style="margin-top:0">
@@ -207,7 +207,7 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
         ph += '<div class="msg ' + (spans || !gSize || gSize !== cSize ? 'ok' : 'warn') + '">' + line + '</div>';
         if (spans || !gSize) ph += '<div class="msg ok">gDNA가 섞여도 산물이 생기지 않아요. 가장 확실한 설계입니다.</div>';
         else if (gSize > 3000) ph += '<div class="msg ok">gDNA 산물이 ' + n(gSize) + ' bp로 너무 길어 2단계 qPCR(60 °C 1분)에서는 거의 만들어지지 않아요. 사실상 구분됩니다.</div>';
-        else if (gSize !== cSize) ph += '<div class="msg ok">gDNA가 섞이면 ' + n(gSize) + ' bp 밴드가 따로 나와요. 젤과 녹는점 곡선에서 구분할 수 있습니다. <a href="pcr.html">PCR 시뮬레이션</a>에 두 서열을 넣어 확인해 보세요.</div>';
+        else if (gSize !== cSize) ph += '<div class="msg ok">gDNA가 섞이면 ' + n(gSize) + ' bp 밴드가 따로 나와요. 젤과 melt curve에서 구분할 수 있습니다. <a href="pcr.html">PCR 시뮬레이션</a>에 두 서열을 넣어 확인해 보세요.</div>';
         else ph += '<div class="msg warn">두 프라이머가 같은 엑손에 있어서 gDNA 산물도 ' + n(cSize) + ' bp예요. 유전체 DNA가 섞이면 구분할 수 없습니다. 서로 다른 엑손에 있는 쌍, 또는 하나가 경계에 걸치는 쌍으로 바꿔 보세요.</div>';
       }
       ph += '</div>';
