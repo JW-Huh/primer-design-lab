@@ -56,8 +56,8 @@ ul.assume li { margin: 3px 0; }
 
   <section class="panel">
     <div class="grid" style="margin-top:0">
-      <div><label class="field" for="c">① cDNA 서열 (mRNA FASTA)</label><textarea id="c" spellcheck="false" style="min-height:96px" placeholder="&gt;NM_002133.3 Homo sapiens heme oxygenase 1 (HMOX1), mRNA&#10;..."></textarea></div>
-      <div><label class="field" for="g">② gDNA 서열 (유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:96px" placeholder="핀볼 결과의 'gDNA 보기 (FASTA)'"></textarea></div>
+      <div><label class="field" for="c">① cDNA 서열(mRNA FASTA)</label><textarea id="c" spellcheck="false" style="min-height:96px" placeholder="&gt;NM_002133.3 Homo sapiens heme oxygenase 1 (HMOX1), mRNA&#10;..."></textarea></div>
+      <div><label class="field" for="g">② gDNA 서열(유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:96px" placeholder="핀볼 결과의 'gDNA 보기(FASTA)'"></textarea></div>
     </div>
 
     <p class="pairhead">내 프라이머</p>
@@ -66,7 +66,7 @@ ul.assume li { margin: 3px 0; }
       <div><label class="field" for="ra">Reverse (5′→3′)</label><input type="text" id="ra" spellcheck="false" autocomplete="off"></div>
     </div>
     <details class="opt" id="bopt">
-      <summary>비교할 쌍 (선택)</summary>
+      <summary>비교할 쌍(선택)</summary>
       <div class="grid" style="margin-top:6px">
         <div><label class="field" for="fb">Forward (5′→3′)</label><input type="text" id="fb" spellcheck="false" autocomplete="off"></div>
         <div><label class="field" for="rb">Reverse (5′→3′)</label><input type="text" id="rb" spellcheck="false" autocomplete="off"></div>
@@ -77,17 +77,17 @@ ul.assume li { margin: 3px 0; }
     <p class="pairhead">PCR 프로그램</p>
     <div class="tw">
     <table class="prog">
-      <tr><th>단계</th><th>온도 (°C)</th><th>시간 (초)</th></tr>
-      <tr><td>초기 변성 (효소 활성화)</td><td><input type="text" id="initT" inputmode="decimal"></td><td><input type="text" id="initS" inputmode="decimal" value="120"></td></tr>
-      <tr><td>변성 (denaturation)</td><td><input type="text" id="denT" inputmode="decimal"></td><td><input type="text" id="denS" inputmode="decimal"></td></tr>
-      <tr><td>결합 (annealing)</td><td><input type="text" id="annT" inputmode="decimal"></td><td><input type="text" id="annS" inputmode="decimal"></td></tr>
-      <tr><td>연장 (extension)</td><td><input type="text" id="extT" inputmode="decimal"></td><td><input type="text" id="extS" inputmode="decimal"></td></tr>
+      <tr><th>단계</th><th>온도(°C)</th><th>시간(초)</th></tr>
+      <tr><td>초기 변성(효소 활성화)</td><td><input type="text" id="initT" inputmode="decimal"></td><td><input type="text" id="initS" inputmode="decimal" value="120"></td></tr>
+      <tr><td>변성(denaturation)</td><td><input type="text" id="denT" inputmode="decimal"></td><td><input type="text" id="denS" inputmode="decimal"></td></tr>
+      <tr><td>결합(annealing)</td><td><input type="text" id="annT" inputmode="decimal"></td><td><input type="text" id="annS" inputmode="decimal"></td></tr>
+      <tr><td>연장(extension)</td><td><input type="text" id="extT" inputmode="decimal"></td><td><input type="text" id="extS" inputmode="decimal"></td></tr>
       <tr><td>사이클 수</td><td colspan="2"><input type="text" id="cyc" inputmode="numeric"></td></tr>
     </table>
     </div>
     <p class="hint">연장 단계를 따로 두지 않으려면 연장 시간을 0으로 넣습니다. 이때 연장은 결합 단계에서 일어납니다.</p>
     <div class="checks">
-      <label><input type="checkbox" id="contam" checked> RNA에 유전체 DNA가 조금 섞임 (DNase 처리 안 함)</label>
+      <label><input type="checkbox" id="contam" checked> RNA에 유전체 DNA가 조금 섞임(DNase 처리 안 함)</label>
     </div>
     <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">PCR 돌리기</button><button class="btn ghost" id="load" type="button" hidden>비교평가의 두 쌍 불러오기</button><button class="btn ghost" id="ex" type="button">HBB 예시 넣기</button></div>
     <div id="err" class="msg err" hidden style="margin-top:12px"></div>
@@ -103,10 +103,10 @@ ul.assume li { margin: 3px 0; }
     <div id="sum"></div>
 
     <div class="figs">
-      <div class="fig"><h3>가상 젤 (2% agarose, 반응액 5 µL)</h3><div id="gel"></div><p class="hint">0.5 ng보다 적은 산물은 보이지 않습니다. 같은 크기 산물은 한 밴드로 겹칩니다.</p></div>
+      <div class="fig"><h3>가상 젤(2% agarose, 반응액 5 µL)</h3><div id="gel"></div><p class="hint">0.5 ng보다 적은 산물은 보이지 않습니다. 같은 크기 산물은 한 밴드로 겹칩니다.</p></div>
       <div class="figs2">
         <div class="fig"><h3>증폭 곡선</h3><div id="amp"></div><p class="hint">형광이 기준선(점선)을 넘는 사이클이 Ct입니다. 주형이 많을수록 일찍 넘습니다.</p></div>
-        <div class="fig"><h3>Tm 곡선 (melt curve)</h3><div id="melt"></div><p class="hint">산물 종류마다 그 Tm에 봉우리가 생깁니다. 프라이머 이합체는 낮은 온도에서 떨어집니다.</p></div>
+        <div class="fig"><h3>Tm 곡선(melt curve)</h3><div id="melt"></div><p class="hint">산물 종류마다 그 Tm에 봉우리가 생깁니다. 프라이머 이합체는 낮은 온도에서 떨어집니다.</p></div>
       </div>
     </div>
 
@@ -212,7 +212,7 @@ ul.assume li { margin: 3px 0; }
   }
 
   function bindTable(res, M) {
-    var T = res.prog.annT, h = '<tr><th></th><th>서열 (5′→3′)</th><th>Tm*</th><th>' + T + ' °C에서 붙는 비율</th><th>내 mRNA에 붙는 자리</th><th>다른 전사체에 붙는 자리**</th></tr>';
+    var T = res.prog.annT, h = '<tr><th></th><th>서열(5′→3′)</th><th>Tm*</th><th>' + T + ' °C에서 붙는 비율</th><th>내 mRNA에 붙는 자리</th><th>다른 전사체에 붙는 자리**</th></tr>';
     $('notes').innerHTML = '';
     res.pairs.forEach(function (pr) {
       var cd = pr.lanes[0];
@@ -369,7 +369,7 @@ ul.assume li { margin: 3px 0; }
     var o = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="100%" style="max-width:' + width + 'px" role="img" aria-label="Tm 곡선">';
     o += '<rect x="' + left + '" y="' + top + '" width="' + pw + '" height="' + ph + '" fill="#fbfcfe" stroke="#d9e1ea"/>';
     for (var t = T0; t <= T1; t += 5) o += '<text x="' + xOf(t) + '" y="' + (top + ph + 14) + '" text-anchor="middle" font-size="10" fill="#5b6878">' + t + '</text>';
-    o += '<text x="' + (left + pw / 2) + '" y="' + (top + ph + 28) + '" text-anchor="middle" font-size="11" fill="#5b6878">온도 (°C)</text>';
+    o += '<text x="' + (left + pw / 2) + '" y="' + (top + ph + 28) + '" text-anchor="middle" font-size="11" fill="#5b6878">온도(°C)</text>';
     o += '<text x="11" y="' + (top + ph / 2) + '" text-anchor="middle" font-size="11" fill="#5b6878" transform="rotate(-90 11 ' + (top + ph / 2) + ')">−dF/dT</text>';
     var leg = '';
     lanes.forEach(function (L, i) {
@@ -398,7 +398,7 @@ ul.assume li { margin: 3px 0; }
       if (size < 70 || size > 150) msg('verdict', 'warn', line + ' qPCR 앰플리콘은 70–150 bp가 좋습니다.');
       else if (!cd.ct || cd.ct > 26) msg('verdict', 'warn', line + ' Ct가 늦습니다. 사이클마다 산물이 두 배로 늘지 못하고 있다는 뜻입니다.');
       else msg('verdict', 'ok', line);
-      if (cd.smearNg >= 1) msg('verdict', 'err', who + 'cDNA 레인에 여러 크기의 비특이 산물이 번져(smear) 있습니다 (' + fmtNg(cd.smearNg) + ' ng). 밴드 하나로 모이지 않는 이 산물은 프라이머가 3′ 끝 몇 염기만 맞는 수많은 자리에 붙어 생깁니다.');
+      if (cd.smearNg >= 1) msg('verdict', 'err', who + 'cDNA 레인에 여러 크기의 비특이 산물이 번져(smear) 있습니다(' + fmtNg(cd.smearNg) + ' ng). 밴드 하나로 모이지 않는 이 산물은 프라이머가 3′ 끝 몇 염기만 맞는 수많은 자리에 붙어 생깁니다.');
       var share = tgt.ng / tgt.band.ng;
       if (share < 0.95) {
         var others = {}; tgt.band.parts.forEach(function (x) { if (x !== tgt.part) { var n = x.dimer ? '프라이머 이합체' : srcName(x.p); others[n] = (others[n] || 0) + x.ng; } });
@@ -406,7 +406,7 @@ ul.assume li { margin: 3px 0; }
         msg('verdict', 'err', who + '같은 크기 밴드의 ' + pct(1 - share) + '는 내 mRNA가 아닌 ' + list.join(', ') + '에서 나왔습니다. 젤로는 구분되지 않아 발현량이 부풀려집니다.');
       }
       var extra = vis.filter(function (b) { return b !== tgt.band && !b.dimer; });
-      if (extra.length) msg('verdict', 'err', who + 'cDNA 레인에 다른 밴드가 ' + extra.length + '개 더 있습니다 (' + extra.map(function (b) { return b.size + ' bp'; }).join(', ') + '). Tm 곡선에도 봉우리가 여럿 생깁니다.');
+      if (extra.length) msg('verdict', 'err', who + 'cDNA 레인에 다른 밴드가 ' + extra.length + '개 더 있습니다(' + extra.map(function (b) { return b.size + ' bp'; }).join(', ') + '). Tm 곡선에도 봉우리가 여럿 생깁니다.');
       var dimC = vis.filter(function (b) { return b.dimer; });
       if (dimC.length) msg('verdict', 'warn', who + 'cDNA 레인에도 프라이머 이합체가 보입니다.');
       if (gl) {

@@ -1,26 +1,26 @@
-/* PCR 시뮬레이션 엔진 (브라우저 전용, 외부 전송 없음)
+/* PCR 시뮬레이션 엔진(브라우저 전용, 외부 전송 없음)
  *
  * 근거
- *  - 프라이머–주형 결합: nearest-neighbor 열역학 (SantaLucia 1998), Mg2+ 보정 (von Ahsen 2001).
- *    짝이 안 맞는 염기는 그 양옆 이웃 쌍을 약한 값으로 바꿔 계산 (Allawi & SantaLucia 1997–98의 평균 크기).
+ *  - 프라이머–주형 결합: nearest-neighbor 열역학(SantaLucia 1998), Mg2+ 보정(von Ahsen 2001).
+ *    짝이 안 맞는 염기는 그 양옆 이웃 쌍을 약한 값으로 바꿔 계산(Allawi & SantaLucia 1997–98의 평균 크기).
  *  - 3′ 끝 불일치에 따른 연장 효율: Kwok et al. 1990 (Nucleic Acids Res), Stadhouders et al. 2010 (J Mol Diagn).
- *  - 비특이 결합 후보 찾기: 3′ 끝 짧은 조각이 맞는 자리를 먼저 찾고 전체 결합을 계산 (MFEprimer, Qu et al. 2012의 방식).
+ *  - 비특이 결합 후보 찾기: 3′ 끝 짧은 조각이 맞는 자리를 먼저 찾고 전체 결합을 계산(MFEprimer, Qu et al. 2012의 방식).
  *  - 혼성화 속도: k_on ≈ 10^6 M⁻¹s⁻¹ (Wetmur 1991).
- *  - 중합효소 속도: Taq 약 60 nt/s (70 °C), 24 nt/s (55 °C) (Innis et al. 1988, PNAS)의 35%를 실효값으로 씀 (72 °C에서 약 1.3 kb/분, "1 kb당 1분" 관행에 가까움).
+ *  - 중합효소 속도: Taq 약 60 nt/s (70 °C), 24 nt/s (55 °C) (Innis et al. 1988, PNAS)의 35%를 실효값으로 씀(72 °C에서 약 1.3 kb/분, "1 kb당 1분" 관행에 가까움).
  *  - 변성: 산물 Tm보다 충분히 뜨거워야 하고, 길수록 가닥이 다 떨어지는 데 시간이 더 걸린다고 봄.
  *  - 나머지 전사체(약 5×10^7 nt)·유전체(3×10^9 nt)의 무작위 결합: 3′ 끝 8–16 nt가 우연히 맞는 자리 수(4^-k)와
  *    그 결합 세기로 계산해, 결합 온도가 낮을 때 여러 크기 산물(번짐)이 생기게 함.
  *  - 사이클마다 증폭 효율이 프라이머 결합·연장·변성에 따라 정해지고, 산물이 쌓이면 효소·프라이머가 모자라 평탄해지는 모형
  *    (Mehra & Hu 2005; Gevertz et al. 2005, Biotechnol Bioeng).
- *  - 배경 서열: NCBI BLAST(refseq_rna, 사람)로 찾은 다른 유전자 전사체, 흔한 전사체, 유전체 구간 (pcr-bg.js).
+ *  - 배경 서열: NCBI BLAST(refseq_rna, 사람)로 찾은 다른 유전자 전사체, 흔한 전사체, 유전체 구간(pcr-bg.js).
  */
 (function (root) {
   var D = root.DNA, NN = D.NN, R = 1.987;
   var MIX = { mono: 50, mg: 3, dntp: 0.8, primer: 0.25 };   // SYBR qPCR 마스터믹스 수준
   var NAEQ = MIX.mono + 120 * Math.sqrt(Math.max(0, MIX.mg - MIX.dntp));
   var LNNA = Math.log(NAEQ / 1000), C = MIX.primer * 1e-6;
-  var P0 = C * 20e-6 * 6.022e23;          // 20 µL 반응액의 프라이머 분자 수 (약 3 × 10^12)
-  var MMAX = 2.8e14;                      // 쌓일 수 있는 이중가닥 DNA 최대량 (bp 합, 약 300 ng)
+  var P0 = C * 20e-6 * 6.022e23;          // 20 µL 반응액의 프라이머 분자 수(약 3 × 10^12)
+  var MMAX = 2.8e14;                      // 쌓일 수 있는 이중가닥 DNA 최대량(bp 합, 약 300 ng)
   var KON = 1e6;
   var COPIES = { cdna: 3000, gdna: 3000, contam: 30 };
   var MM = [0, -1.6];
@@ -31,7 +31,7 @@
   function initP(b) { return (b === 'G' || b === 'C') ? [0.1, -2.8] : [2.3, 4.1]; }
 
   // ── 결합 열역학 ─────────────────────────────────────────
-  // p: 프라이머 5′→3′, s: 주형에서 프라이머와 같은 방향으로 읽은 자리 (완전히 맞으면 s === p)
+  // p: 프라이머 5′→3′, s: 주형에서 프라이머와 같은 방향으로 읽은 자리(완전히 맞으면 s === p)
   function duplex(p, s) {
     var L = p.length, m = new Array(L), i, mis = 0;
     for (i = 0; i < L; i++) { m[i] = p[i] === s[i] && isB(p[i]); if (!m[i]) mis++; }
@@ -61,7 +61,7 @@
   // 반응 조건(프라이머가 주형보다 훨씬 많음)에서 절반이 붙는 온도
   function tmSite(dH, dS) { return dH * 1000 / (dS + R * Math.log(C)) - 273.15; }
 
-  // 3′ 끝에서 k번째 염기가 안 맞을 때 연장 효율 (프라이머:주형 염기 종류에 따라)
+  // 3′ 끝에서 k번째 염기가 안 맞을 때 연장 효율(프라이머:주형 염기 종류에 따라)
   var EXT3 = { 1: [0.03, 0.005, 0.3], 2: [0.15, 0.05, 0.5], 3: [0.4, 0.25, 0.7], 4: [0.65, 0.5, 0.85], 5: [0.85, 0.75, 0.95] };
   function ext3(p, s, mm3) {
     var f = 1;
@@ -113,7 +113,7 @@
     return out;
   }
 
-  // 중합효소 실효 속도 (nt/s)
+  // 중합효소 실효 속도(nt/s)
   var RATE = [[30, 0.5], [37, 1.5], [45, 6], [55, 24], [60, 35], [65, 48], [70, 60], [75, 65], [80, 55], [85, 30], [90, 8], [95, 0]];
   function rate(T) {
     if (T <= RATE[0][0]) return RATE[0][1] * RATE_EFF;
@@ -131,7 +131,7 @@
   }
   function extFrac(L, dist) { return 1 / (1 + Math.pow(L / Math.max(1, dist), 6)); }
 
-  // ── 나머지 전사체·유전체에 대한 무작위 결합 (통계 근사) ──
+  // ── 나머지 전사체·유전체에 대한 무작위 결합(통계 근사) ──
   // 실제 서열을 다 넣을 수 없으므로, 크기 B인 무작위 서열에서 프라이머 3′ 끝 k nt가 우연히 맞는 자리 수
   // n_k = 2B · (3/4) · 4^-k 와 그 k-mer의 결합 비율 θ_k를 곱해 더한다. 결합 온도가 낮을수록 짧은 일치도 붙는다.
   // cDNA: 서로 다른 전사체 서열 약 5×10^7 nt, 반응 하나에 전사체 약 2×10^8개(평균 2 kb) → 같은 자리 평균 8,000 copies
@@ -169,7 +169,7 @@
   }
   function meltTm(gc, n) { return 81.5 + 0.41 * gc - 675 / n + 16.6 * Math.log(0.15) / Math.LN10; }
 
-  // ── 난수 (실행마다 조금씩 다른 결과) ─────────────────────
+  // ── 난수(실행마다 조금씩 다른 결과) ─────────────────────
   function rng(seed) {
     var a = seed >>> 0;
     return function () { a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -296,7 +296,7 @@
             });
           });
         });
-        // 무작위 결합에서 생기는 여러 크기의 산물 (번짐): 사이클마다 새로 생기는 수
+        // 무작위 결합에서 생기는 여러 크기의 산물(번짐): 사이클마다 새로 생기는 수
         var reach = Math.min(dist, 3000), sm = [];
         if (reach > 80) {
           var rate0 = 0;
@@ -353,7 +353,7 @@
           sm.forEach(function (x) { Mtot += x.N * x.size; });
           curve.push(Mtot);
         }
-        // 형광 (ΔRn): 이중가닥 DNA 양에 비례 + 바탕 잡음
+        // 형광(ΔRn): 이중가닥 DNA 양에 비례 + 바탕 잡음
         var base = 0.012 * (1 + 0.3 * r());
         lane.fluor = curve.map(function (m) { return m / 1e12 + base * (1 + 0.15 * gauss(r)); });
         lane.ct = null;

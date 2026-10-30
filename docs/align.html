@@ -51,8 +51,8 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
 
   <section class="panel">
     <div class="grid" style="margin-top:0">
-      <div><label class="field" for="m">① mRNA 서열 (NM_ FASTA)</label><textarea id="m" spellcheck="false" style="min-height:110px"></textarea></div>
-      <div><label class="field" for="g">② gDNA 서열 (유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:110px"></textarea></div>
+      <div><label class="field" for="m">① mRNA 서열(NM_ FASTA)</label><textarea id="m" spellcheck="false" style="min-height:110px"></textarea></div>
+      <div><label class="field" for="g">② gDNA 서열(유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:110px"></textarea></div>
     </div>
     <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">엑손 찾기</button><button class="btn ghost" id="ex" type="button">HBB 예시 넣기</button></div>
     <div id="err" class="msg err" hidden></div>
@@ -82,7 +82,7 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
 
   <section class="panel">
     <h2>서열은 어디서 구하나요?</h2>
-    <p style="margin:0 0 8px">핀볼 결과의 <b>mRNA 보기</b>(FASTA 화면)와 <b>gDNA 보기 (FASTA)</b>에서 각각 전부 복사합니다. gDNA는 유전자 읽는 방향으로 정리되어 나옵니다. 핀볼 밖의 유전자는 <a href="https://www.ncbi.nlm.nih.gov/gene/">NCBI Gene</a> 페이지의 <b>Genomic regions, transcripts, and products</b> 그림 오른쪽 위 <b>Go to nucleotide: FASTA</b>에서 받습니다.</p>
+    <p style="margin:0 0 8px">핀볼 결과의 <b>mRNA 보기</b>(FASTA 화면)와 <b>gDNA 보기(FASTA)</b>에서 각각 전부 복사합니다. gDNA는 유전자 읽는 방향으로 정리되어 나옵니다. 핀볼 밖의 유전자는 <a href="https://www.ncbi.nlm.nih.gov/gene/">NCBI Gene</a> 페이지의 <b>Genomic regions, transcripts, and products</b> 그림 오른쪽 위 <b>Go to nucleotide: FASTA</b>에서 받습니다.</p>
     <p class="hint">이 도구는 두 서열에서 똑같은 16 염기 조각을 찾아 이어 붙이고, 경계 바로 옆 염기가 양쪽 어디에나 맞을 때는 인트론이 GT로 시작해 AG로 끝나는 자리로 경계를 정합니다. 핀볼의 8개 유전자는 모두 NCBI 레코드의 exon 경계와 같게 나옵니다. 같은 비교를 NCBI <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch&PROGRAM=blastn&BLAST_SPEC=blast2seq&LINK_LOC=align2seq">BLAST (Align two sequences)</a>로 할 수 있고, mRNA–유전체 전용 정렬은 <a href="https://www.ncbi.nlm.nih.gov/sutils/splign/splign.cgi">Splign</a>입니다. NCBI 레코드의 exon 위치도 Splign으로 만든 것입니다.</p>
   </section>
 

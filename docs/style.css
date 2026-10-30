@@ -25,9 +25,12 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.65;
+  /* 한글 단어 중간에서 줄이 바뀌지 않게. 칸보다 긴 서열(염기 문자열)만 필요할 때 끊는다 */
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  line-break: strict;
 }
+textarea, input, .mono, code, pre { word-break: break-all; }
 a { color: var(--blue); }
 :focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
 

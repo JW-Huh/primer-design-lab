@@ -43,8 +43,8 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
 
   <section class="panel">
     <div class="grid" style="margin-top:0">
-      <div><label class="field" for="m">① mRNA 서열 (NM_ FASTA)</label><textarea id="m" spellcheck="false" style="min-height:96px"></textarea></div>
-      <div><label class="field" for="g">② gDNA 서열 (유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:96px"></textarea></div>
+      <div><label class="field" for="m">① mRNA 서열(NM_ FASTA)</label><textarea id="m" spellcheck="false" style="min-height:96px"></textarea></div>
+      <div><label class="field" for="g">② gDNA 서열(유전자 구간 FASTA)</label><textarea id="g" spellcheck="false" style="min-height:96px"></textarea></div>
       <div><label class="field" for="fa">③ 내 Forward (5′→3′)</label><input type="text" id="fa" spellcheck="false" autocomplete="off"></div>
       <div><label class="field" for="ra">④ 내 Reverse (5′→3′)</label><input type="text" id="ra" spellcheck="false" autocomplete="off"></div>
     </div>
@@ -228,7 +228,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     if (b.fatal) { $('refInfo').innerHTML = '<div class="msg err">' + b.fatal + '</div>'; return; }
     var a = score(st.m, M, G, st.A.F, st.A.R);
     var fa = M.indexOf(F), ra = M.indexOf(DNA.rc(R));
-    $('refInfo').innerHTML = '<div class="record">컴퓨터 설계 쌍 (' + esc(st.gene) + ')\nForward 5′-' + F + '-3′  mRNA ' + (fa + 1) + '–' + (fa + F.length) + '\nReverse 5′-' + R + '-3′  mRNA ' + (ra + R.length) + '–' + (ra + 1) + '\n앰플리콘 ' + b.size + ' bp · 점수 ' + b.total + ' / 100</div>';
+    $('refInfo').innerHTML = '<div class="record">컴퓨터 설계 쌍(' + esc(st.gene) + ')\nForward 5′-' + F + '-3′  mRNA ' + (fa + 1) + '–' + (fa + F.length) + '\nReverse 5′-' + R + '-3′  mRNA ' + (ra + R.length) + '–' + (ra + 1) + '\n앰플리콘 ' + b.size + ' bp · 점수 ' + b.total + ' / 100</div>';
     st.scoreB = b.total; save(st);
     var h = '<tr><th>항목</th><th>배점</th><th>내 쌍</th><th>컴퓨터 설계 쌍</th></tr>';
     a.items.forEach(function (it, i) {

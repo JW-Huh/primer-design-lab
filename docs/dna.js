@@ -1,4 +1,4 @@
-/* 프라이머 설계 실습 공통 계산 함수 (브라우저 전용, 외부 전송 없음) */
+/* 프라이머 설계 실습 공통 계산 함수(브라우저 전용, 외부 전송 없음) */
 (function (root) {
   var COMP = { A: 'T', T: 'A', G: 'C', C: 'G', N: 'N', R: 'Y', Y: 'R', S: 'S', W: 'W', K: 'M', M: 'K', B: 'V', V: 'B', D: 'H', H: 'D' };
 
@@ -41,9 +41,9 @@
     CT: 'CT/GA', AG: 'CT/GA', GA: 'GA/CT', TC: 'GA/CT', CG: 'CG/GC', GC: 'GC/CG', GG: 'GG/CC', CC: 'GG/CC'
   };
 
-  // 기본 반응 조건: 일반적인 Taq PCR 버퍼 (KCl 50 mM, MgCl2 1.5 mM, dNTP 각 0.2 mM, 프라이머 0.5 µM)
+  // 기본 반응 조건: 일반적인 Taq PCR 버퍼(KCl 50 mM, MgCl2 1.5 mM, dNTP 각 0.2 mM, 프라이머 0.5 µM)
   var TAQ = { mono: 50, mg: 1.5, dntp: 0.8, primer: 0.5 };
-  // 설계 기준 조건: 프라이머 설계 프로그램들이 Tm을 계산할 때 흔히 쓰는 값 (프라이머 50 nM)
+  // 설계 기준 조건: 프라이머 설계 프로그램들이 Tm을 계산할 때 흔히 쓰는 값(프라이머 50 nM)
   var DESIGN = { mono: 50, mg: 1.5, dntp: 0.6, primer: 0.05 };
 
   function tmNN(s, cond) {
@@ -60,7 +60,7 @@
     });
     var selfComp = s === rc(s);
     if (selfComp) dS += -1.4;
-    // 2가 양이온 보정 (von Ahsen 2001): Mg2+ 중 dNTP에 묶이지 않은 양을 1가 이온으로 환산
+    // 2가 양이온 보정(von Ahsen 2001): Mg2+ 중 dNTP에 묶이지 않은 양을 1가 이온으로 환산
     var freeMg = Math.max(0, cond.mg - cond.dntp);
     var naEq = cond.mono + 120 * Math.sqrt(freeMg);           // mM
     var dSsalt = dS + 0.368 * (s.length - 1) * Math.log(naEq / 1000);
@@ -70,7 +70,7 @@
     return { tm: tm, dH: dH, dS: dS, dSsalt: dSsalt, naEq: naEq, steps: steps, selfComp: selfComp };
   }
 
-  // ── 2차 구조 · 반복 점검 (간이) ─────────────────────────
+  // ── 2차 구조 · 반복 점검(간이) ─────────────────────────
   function pairs(a, b) { return COMP[a] === b; }
 
   // a(5'→3')와 b(5'→3')가 반대 방향으로 붙을 때 가장 긴 연속 짝과 3′ 끝이 걸린 짝
@@ -98,7 +98,7 @@
     var L = s.length, best = { stem: 0 };
     for (var i = 0; i < L; i++) {
       for (var j = L - 1; j > i; j--) {
-        // 고리가 3 nt 미만이 되기 직전까지만 짝을 늘린다 (끝까지 늘린 뒤 버리면 짧은 줄기를 놓침)
+        // 고리가 3 nt 미만이 되기 직전까지만 짝을 늘린다(끝까지 늘린 뒤 버리면 짧은 줄기를 놓침)
         var k = 0;
         while (j - i - 2 * k - 1 >= 3 && pairs(s[i + k], s[j - k])) k++;
         var loop = j - i - 2 * k + 1;
@@ -119,7 +119,7 @@
     return out;
   }
 
-  // 자주 쓰는 제한효소 (인식 서열, 자르는 위치: 인식 서열 첫 염기 앞을 0으로)
+  // 자주 쓰는 제한효소(인식 서열, 자르는 위치: 인식 서열 첫 염기 앞을 0으로)
   var ENZYMES = [
     { name: 'EcoRI', site: 'GAATTC', cut: 1 }, { name: 'SacI', site: 'GAGCTC', cut: 5 },
     { name: 'KpnI', site: 'GGTACC', cut: 5 }, { name: 'SmaI', site: 'CCCGGG', cut: 3 },
@@ -164,8 +164,8 @@
     else add('ok', '머리핀 없음', '');
 
     var d = dimer(s, s);
-    if (d.best3.run >= 4) add('bad', '자기끼리 3′ 끝이 ' + d.best3.run + ' bp 붙음 (self 3′-dimer)', '3′ 끝끼리 붙으면 중합효소가 서로를 늘려 프라이머 이합체가 생겨요.');
-    else if (d.best.run >= 6) add('warn', '자기끼리 ' + d.best.run + ' bp 연속으로 붙음 (self-dimer)', '같은 프라이머 두 개가 서로 붙을 수 있어요.');
+    if (d.best3.run >= 4) add('bad', '자기끼리 3′ 끝이 ' + d.best3.run + ' bp 붙음(self 3′-dimer)', '3′ 끝끼리 붙으면 중합효소가 서로를 늘려 프라이머 이합체가 생겨요.');
+    else if (d.best.run >= 6) add('warn', '자기끼리 ' + d.best.run + ' bp 연속으로 붙음(self-dimer)', '같은 프라이머 두 개가 서로 붙을 수 있어요.');
     else add('ok', '자기끼리 붙는 구간 ' + d.best.run + ' bp 이하', '');
 
     var pal = palindromes(s, 6);
@@ -200,7 +200,7 @@
     return { ta: ta, annealSec: 30, extSec: ext };
   }
 
-  // ── mRNA–gDNA 맞대기 (엑손 찾기) ─────────────────────────
+  // ── mRNA–gDNA 맞대기(엑손 찾기) ─────────────────────────
   // gDNA의 16-mer 위치표를 만들고, mRNA를 왼쪽부터 훑으며 같은 순서로 나오는 조각을 엑손으로 잡는다
   function exonAlign1(M, G) {
     var K = 16, idx = {}, blocks = [], gPrev = -1, mPrev = -1, i = 0;

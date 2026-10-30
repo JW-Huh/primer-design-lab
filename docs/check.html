@@ -38,8 +38,8 @@ pre.pic { font: 13px/1.35 var(--font-mono); background: #f6f8fb; border: 1px sol
 
   <section class="panel">
     <div class="two">
-      <div><label class="field" for="f">Forward 프라이머 (5′→3′)</label><input type="text" id="f" spellcheck="false" autocomplete="off"></div>
-      <div><label class="field" for="r">Reverse 프라이머 (5′→3′)</label><input type="text" id="r" spellcheck="false" autocomplete="off"></div>
+      <div><label class="field" for="f">Forward 프라이머(5′→3′)</label><input type="text" id="f" spellcheck="false" autocomplete="off"></div>
+      <div><label class="field" for="r">Reverse 프라이머(5′→3′)</label><input type="text" id="r" spellcheck="false" autocomplete="off"></div>
     </div>
     <div class="row" style="margin-top:12px">
       <button class="btn" id="go" type="button">점검하기</button>
@@ -85,7 +85,7 @@ pre.pic { font: 13px/1.35 var(--font-mono); background: #f6f8fb; border: 1px sol
 
   function run() {
     var f = DNA.clean($('f').value), r = DNA.clean($('r').value);
-    // 오류가 나면 이전 결과도 숨긴다 (새 결과로 착각하지 않도록)
+    // 오류가 나면 이전 결과도 숨긴다(새 결과로 착각하지 않도록)
     if (!f && !r) { $('err').textContent = '프라이머를 하나 이상 넣어 주세요.'; $('err').hidden = false; $('out').hidden = true; return; }
     var e = (f && DNA.check(f)) || (r && DNA.check(r));
     if (e) { $('err').textContent = e; $('err').hidden = false; $('out').hidden = true; return; }
