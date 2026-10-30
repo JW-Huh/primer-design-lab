@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base target="_blank">
+<title>PCR 시뮬레이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+@media (max-width: 560px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.ta { display: flex; gap: 8px; align-items: center; }
+.ta input { width: 6em; }
+.opt summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--ink-soft); }
+.opt { margin-top: 12px; }
+.sum { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.box { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fbfcfe; }
+.box .k { font-size: 12.5px; color: var(--ink-soft); }
+.box .v { font: 700 18px/1.3 var(--font-mono); margin-top: 2px; }
+.box .s { font-size: 13px; color: var(--ink-soft); }
+table.t { border-collapse: collapse; width: 100%; font-size: 14.5px; margin-top: 10px; }
+table.t td, table.t th { border-bottom: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+table.t th { background: #f6f8fb; font-size: 13px; color: var(--ink-soft); }
+table.t td.m { font-family: var(--font-mono); font-size: 13.5px; }
+.figs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 16px; margin-top: 14px; align-items: start; }
+@media (max-width: 760px) { .figs { grid-template-columns: minmax(0, 1fr); } }
+.fig { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff; overflow-x: auto; }
+.fig h3 { font: 18px/1.2 var(--font-cute); margin: 0 0 6px; }
+svg text { font-family: var(--font-mono); }
+.res-list { display: grid; gap: 8px; margin-top: 12px; }
+.msg.warn { background: #fdf3d8; color: #7a5a00; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
+    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html" aria-current="page">PCR 시뮬레이션</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a></nav>
+  </div>
+
+  <h1>PCR 시뮬레이션</h1>
+  <p class="lead">내 프라이머로 PCR을 돌리면 어떤 밴드가 나올지 미리 봅니다. 프라이머가 붙는 자리를 모두 찾아 산물을 만들고, 결합 온도·2차 구조·산물 길이를 반영해 가상 젤과 녹는점 곡선으로 보여 줍니다.</p>
+
+  <section class="panel">
+    <label class="field" for="c">① cDNA 서열 (mRNA의 FASTA를 통째로)</label>
+    <textarea id="c" spellcheck="false" style="min-height:100px" placeholder="&gt;NM_000518.5 Homo sapiens hemoglobin subunit beta (HBB), mRNA&#10;ACATTTGCTTCTGACACAACTGTGTTCACTAGCAACCTCAAACAGACACCATGGTGCATCTGACTCCTGAGGAG..."></textarea>
+    <div class="grid">
+      <div><label class="field" for="f">② Forward 프라이머 (5′→3′)</label><input type="text" id="f" spellcheck="false" autocomplete="off"></div>
+      <div><label class="field" for="r">③ Reverse 프라이머 (5′→3′)</label><input type="text" id="r" spellcheck="false" autocomplete="off"></div>
+      <div>
+        <label class="field">④ 결합(annealing) 온도</label>
+        <div class="ta"><input type="text" id="ta" inputmode="decimal" value="60"> °C <span class="hint" style="margin:0">(2단계 qPCR 기본 60)</span></div>
+      </div>
+    </div>
+    <details class="opt" id="gopt">
+      <summary>심화 · gDNA 서열도 넣기 (유전체 DNA가 섞였을 때 어떤 밴드가 나오는지 보기)</summary>
+      <textarea id="g" spellcheck="false" style="min-height:90px; margin-top:8px" placeholder="같은 유전자의 유전체(genomic) 서열 FASTA. 구하는 방법은 엑손 찾기 페이지 아래 안내를 보세요."></textarea>
+    </details>
+    <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">PCR 돌리기</button><button class="btn ghost" id="ex" type="button">HBB 예시 넣기</button></div>
+    <div id="err" class="msg err" hidden></div>
+  </section>
+
+  <section class="panel" id="out" hidden>
+    <h2>프라이머가 붙나요?</h2>
+    <table class="t" id="bind"></table>
+    <div id="notes" class="res-list"></div>
+
+    <h2 style="margin-top:22px">결과</h2>
+    <div class="sum" id="sum"></div>
+
+    <div class="figs">
+      <div class="fig"><h3>가상 젤 (2% agarose)</h3><div id="gel"></div></div>
+      <div class="fig"><h3>녹는점 곡선 (melt curve)</h3><div id="melt"></div><p class="hint">SYBR Green은 이중가닥 DNA에만 빛나므로, 산물 종류마다 봉우리가 하나씩 생깁니다. 짧은 프라이머 이합체는 낮은 온도에서, 긴 산물은 높은 온도에서 녹습니다.</p></div>
+    </div>
+
+    <div id="verdict" class="res-list"></div>
+  </section>
+
+  <section class="panel">
+    <h2>이 시뮬레이션의 가정</h2>
+    <ul style="margin:0; padding-left:1.2em; font-size:14.5px">
+      <li>프라이머는 서열이 <b>정확히 맞는 자리</b>에만 붙습니다. 실제로는 몇 염기가 틀려도 붙을 수 있어서, 결합 온도가 Tm보다 8 °C 넘게 낮으면 "비특이 결합 위험"으로 표시합니다.</li>
+      <li>결합 온도가 Tm보다 1 °C 넘게 높아지면 붙는 양이 줄고, 5 °C 이상 높으면 붙지 않는 것으로 봅니다. Tm은 Primer-BLAST 조건의 nearest-neighbor 값입니다.</li>
+      <li>2단계 qPCR(60 °C 1분)에서는 약 1 kb까지 다 복제됩니다. 1–3 kb는 희미하게, 3 kb 넘으면 산물이 나오지 않는 것으로 봅니다.</li>
+      <li>3′ 끝이 4 bp 이상 서로 붙는 프라이머 이합체는 모든 레인(NTC 포함)에 짧은 밴드로 나타납니다. 머리핀 줄기가 6 bp 이상이거나 3′ 끝을 포함하면 효율이 절반으로 떨어진다고 봅니다.</li>
+      <li>산물의 녹는 온도는 길이와 GC 비율로 추정합니다 (81.5 + 0.41·GC% − 675/길이 + 염 보정). 실제 기기 값과 1–2 °C 다를 수 있습니다.</li>
+    </ul>
+    <p class="hint">NTC(no template control)는 주형을 넣지 않은 대조군입니다. 여기서 밴드나 봉우리가 보이면 프라이머 이합체입니다.</p>
+  </section>
+
+  <footer class="foot">모든 계산은 이 브라우저 안에서만 이루어지고, 입력한 서열은 어디에도 전송되지 않습니다.</footer>
+</div>
+
+<script src="dna.js"></script>
+<script src="example-hbb.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var COLOR = { cDNA: '#1f5fbf', gDNA: '#c8423b', NTC: '#5b6878' };
+  var LADDER = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1500, 2000, 3000];
+  var MIN_BP = 50, MAX_BP = 3000;
+
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function fail(msg) { $('err').innerHTML = msg; $('err').hidden = false; $('out').hidden = true; }
+  function box(k, v, s) { return '<div class="box"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
+  function msg(parent, cls, html) { var d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html; $(parent).appendChild(d); }
+
+  // 결합 자리: '+'는 프라이머 서열이 그대로 있는 곳(→ 연장), '-'는 역상보가 있는 곳(← 연장)
+  function sites(t, p) {
+    var out = [], i, q = DNA.rc(p);
+    for (i = t.indexOf(p); i >= 0; i = t.indexOf(p, i + 1)) out.push({ start: i, end: i + p.length - 1, dir: '+' });
+    for (i = t.indexOf(q); i >= 0; i = t.indexOf(q, i + 1)) out.push({ start: i, end: i + p.length - 1, dir: '-' });
+    return out;
+  }
+  // 마주 보는 두 결합 자리 사이가 산물. F–R뿐 아니라 F–F, R–R 조합도 본다
+  function products(t, prs) {
+    var out = [];
+    prs.forEach(function (X) {
+      sites(t, X.seq).filter(function (s) { return s.dir === '+'; }).forEach(function (a) {
+        prs.forEach(function (Y) {
+          sites(t, Y.seq).filter(function (s) { return s.dir === '-'; }).forEach(function (b) {
+            var size = b.end - a.start + 1;
+            if (b.end > a.start && size <= 6000) out.push({ size: size, from: a.start, to: b.end, X: X, Y: Y, gc: DNA.gcPercent(t.substring(a.start, b.end + 1)) });
+          });
+        });
+      });
+    });
+    return out;
+  }
+  // Tm + 1 °C까지는 다 붙고, 그보다 높아지면 줄어 Tm + 5 °C에서 0
+  function bind(tm, ta) { return ta <= tm + 1 ? 1 : Math.max(0, 1 - (ta - tm - 1) / 4); }
+  function extFactor(size) { return size <= 1000 ? 1 : size <= 3000 ? 0.3 : 0; }
+  function meltTm(gc, n) { return 81.5 + 0.41 * gc - 675 / n + 16.6 * Math.log(0.15) / Math.LN10; }
+  function hpFactor(s) { var h = DNA.hairpin(s); return h.stem >= 6 || (h.stem >= 4 && h.end3) ? 0.5 : 1; }
+
+  function run() {
+    var c = DNA.clean($('c').value), g = DNA.clean($('g').value), f = DNA.clean($('f').value), r = DNA.clean($('r').value);
+    var ta = parseFloat($('ta').value);
+    var e = DNA.check(c); if (e) return fail('cDNA: ' + e);
+    if (!f || !r) return fail('Forward와 Reverse를 모두 넣어 주세요.');
+    e = DNA.check(f) || DNA.check(r); if (e) return fail('프라이머: ' + e);
+    if (g) { e = DNA.check(g); if (e) return fail('gDNA: ' + e); }
+    if (!(ta >= 40 && ta <= 75)) return fail('결합 온도는 40–75 °C 사이로 넣어 주세요.');
+    $('err').hidden = true;
+
+    var prs = [{ name: 'F', seq: f }, { name: 'R', seq: r }];
+    prs.forEach(function (p) { var t = DNA.tmNN(p.seq, DNA.PRIMERBLAST); p.tm = t ? t.tm : NaN; p.b = isNaN(p.tm) ? 1 : bind(p.tm, ta); p.hp = hpFactor(p.seq); });
+
+    // 프라이머 이합체 (3′ 끝이 걸린 짝 4 bp 이상)
+    var dim = null;
+    [{ d: DNA.dimer(f, r), size: f.length + r.length, label: 'F+R' }, { d: DNA.dimer(f, f), size: 2 * f.length, label: 'F+F' }, { d: DNA.dimer(r, r), size: 2 * r.length, label: 'R+R' }].forEach(function (o) {
+      var run = o.d.best3.run;
+      if (run >= 4 && (!dim || run > dim.run)) dim = { run: run, size: o.size - run, label: o.label, inten: Math.min(1, run / 6) };
+    });
+
+    // 결합 표
+    var html = '<tr><th></th><th>서열 (5′→3′)</th><th>Tm</th><th>' + ta + ' °C에서</th></tr>';
+    prs.forEach(function (p) {
+      var st = isNaN(p.tm) ? '—' : p.b >= 1 ? '붙음' : p.b > 0 ? '약하게 붙음 (Tm보다 ' + (ta - p.tm).toFixed(1) + ' °C 높음)' : '<b style="color:var(--red)">안 붙음</b> (Tm보다 ' + (ta - p.tm).toFixed(1) + ' °C 높음)';
+      html += '<tr><td><b>' + p.name + '</b></td><td class="m">' + esc(p.seq) + '</td><td class="m">' + (isNaN(p.tm) ? '—' : p.tm.toFixed(1) + ' °C') + '</td><td>' + st + '</td></tr>';
+    });
+    $('bind').innerHTML = html;
+
+    $('notes').innerHTML = '';
+    prs.forEach(function (p) {
+      if (!isNaN(p.tm) && ta < p.tm - 8) msg('notes', 'warn', p.name + '의 Tm(' + p.tm.toFixed(1) + ' °C)보다 결합 온도가 8 °C 넘게 낮아요. 실제로는 비슷한 다른 자리에도 붙어 비특이 산물이 생길 수 있습니다 (젤에 흐린 번짐으로 표시).');
+      if (p.hp < 1) msg('notes', 'warn', p.name + '에 머리핀이 있어 효율을 절반으로 봅니다.');
+    });
+    if (dim) msg('notes', 'warn', '프라이머 이합체: ' + dim.label + '의 3′ 끝이 ' + dim.run + ' bp 붙어 약 ' + dim.size + ' bp 산물이 생깁니다. NTC에도 밴드가 나옵니다.');
+    var smear = prs.some(function (p) { return !isNaN(p.tm) && ta < p.tm - 8; });
+
+    // 레인
+    var lanes = [{ name: 'cDNA', t: c }];
+    if (g) lanes.push({ name: 'gDNA', t: g });
+    lanes.push({ name: 'NTC', t: null });
+    lanes.forEach(function (l) {
+      l.bands = [];
+      if (l.t) products(l.t, prs).forEach(function (p) {
+        var inten = p.X.b * p.Y.b * extFactor(p.size) * p.X.hp * p.Y.hp;
+        l.bands.push({ size: p.size, inten: inten, tm: meltTm(p.gc, p.size), from: p.from, to: p.to, who: p.X.name + '/' + p.Y.name });
+      });
+      if (dim) l.bands.push({ size: dim.size, inten: dim.inten * (l.t ? 0.6 : 1), tm: meltTm(50, dim.size), dimer: true });
+      l.smear = smear && !!l.t;
+    });
+
+    // 요약
+    var cd = lanes[0], visible = function (b) { return b.inten > 0.05 && !b.dimer; };
+    var cBands = cd.bands.filter(visible), gl = g ? lanes[1] : null, gBands = gl ? gl.bands.filter(visible) : [];
+    function list(bs) { return bs.length ? bs.map(function (b) { return b.size + ' bp' + (b.inten < 0.5 ? ' (희미)' : ''); }).join(', ') : '없음'; }
+    var s = box('cDNA 레인', list(cBands), cBands.length === 1 ? 'F/R 결합 ' + (cBands[0].from + 1) + '–' + (cBands[0].to + 1) + ' · 녹는점 약 ' + cBands[0].tm.toFixed(0) + ' °C' : cBands.length > 1 ? '산물이 ' + cBands.length + '개' : '');
+    if (gl) {
+      var gs = '';
+      if (!gBands.length) gs = cd.bands.length && products(g, prs).length ? '산물이 너무 길어(3 kb 초과) 2단계 qPCR에서 안 나옴' : '프라이머가 gDNA에 연속으로 붙는 자리가 없음';
+      else if (cBands.length === 1 && gBands.length === 1) gs = gBands[0].size === cBands[0].size ? 'cDNA 산물과 크기가 같음' : 'cDNA 산물과 ' + Math.abs(gBands[0].size - cBands[0].size) + ' bp 차이 (인트론)';
+      s += box('gDNA 레인', list(gBands), gs);
+    }
+    s += box('NTC 레인', dim ? dim.size + ' bp (프라이머 이합체)' : '깨끗함', dim ? '주형 없이도 생기는 산물' : '');
+    $('sum').innerHTML = s;
+
+    drawGel(lanes); drawMelt(lanes);
+
+    // 판정
+    $('verdict').innerHTML = '';
+    var ok = true;
+    if (!cBands.length) { ok = false; msg('verdict', 'err', 'cDNA에서 산물이 생기지 않아요. 두 프라이머가 모두 붙는지, 서로 마주 보는지(Reverse가 Forward의 오른쪽에 있는지) 확인하세요.'); }
+    else if (cBands.length > 1) { ok = false; msg('verdict', 'err', 'cDNA에서 산물이 ' + cBands.length + '개 생겨요. 프라이머가 여러 곳에 붙습니다. qPCR은 산물이 하나여야 합니다.'); }
+    else if (cBands[0].size < 70 || cBands[0].size > 150) { ok = false; msg('verdict', 'err', '산물 ' + cBands[0].size + ' bp. qPCR은 70–150 bp가 좋아요.'); }
+    else if (cBands[0].inten < 0.5) { ok = false; msg('verdict', 'err', '산물은 생기지만 희미해요. 결합 온도가 Tm보다 높거나 머리핀 때문입니다.'); }
+    if (dim) { ok = false; msg('verdict', 'err', 'NTC에 프라이머 이합체 밴드가 있어요. SYBR qPCR에서는 이것도 형광으로 잡혀 Ct를 망칩니다. 3′ 끝이 서로 붙지 않는 쌍으로 바꾸세요.'); }
+    if (gl) {
+      if (!gBands.length) msg('verdict', 'ok', 'gDNA가 섞여도 산물이 나오지 않아요. 유전체 DNA 오염을 걱정하지 않아도 되는 설계입니다.');
+      else if (cBands.length === 1 && gBands[0].size !== cBands[0].size) msg('verdict', 'ok', 'gDNA가 섞이면 ' + gBands[0].size + ' bp 밴드가 따로 나와요. 젤이나 녹는점 곡선에서 cDNA 산물(' + cBands[0].size + ' bp)과 구분할 수 있습니다.');
+      else msg('verdict', 'warn', 'gDNA 산물이 cDNA 산물과 같은 크기예요. 유전체 DNA가 섞이면 구분할 수 없습니다. 두 프라이머가 서로 다른 엑손에 있거나, 하나가 엑손 경계에 걸치도록 고르세요 (엑손 찾기 페이지).');
+    }
+    if (ok) msg('verdict', 'ok', 'cDNA에서 ' + cBands[0].size + ' bp 산물 하나, NTC 깨끗. qPCR에 쓸 수 있는 설계입니다.');
+    $('out').hidden = false;
+  }
+
+  function yOf(size, top, h) {
+    var s = Math.min(MAX_BP, Math.max(MIN_BP, size));
+    return top + (Math.log(MAX_BP) - Math.log(s)) / (Math.log(MAX_BP) - Math.log(MIN_BP)) * h;
+  }
+  function drawGel(lanes) {
+    var W = 70, left = 56, top = 34, H = 300, n = lanes.length + 1, width = left + n * W + 12, height = top + H + 20;
+    var o = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="' + width + '" height="' + height + '" role="img" aria-label="가상 젤">';
+    o += '<rect x="' + (left - 8) + '" y="' + (top - 8) + '" width="' + (n * W + 16) + '" height="' + (H + 20) + '" rx="8" fill="#1b2130"/>';
+    // 사다리
+    var cx = left + W / 2;
+    o += '<text x="' + cx + '" y="18" text-anchor="middle" font-size="12" fill="#5b6878">사다리</text>';
+    LADDER.forEach(function (bp) {
+      var y = yOf(bp, top, H), strong = bp === 500 || bp === 1000;
+      o += '<rect x="' + (cx - 24) + '" y="' + (y - 2) + '" width="48" height="4" fill="#dfe6f3" opacity="' + (strong ? 0.95 : 0.6) + '"/>';
+      o += '<text x="' + (left - 12) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10.5" fill="#5b6878">' + bp + '</text>';
+    });
+    lanes.forEach(function (l, i) {
+      var x = left + (i + 1) * W + W / 2;
+      o += '<text x="' + x + '" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="' + COLOR[l.name] + '">' + l.name + '</text>';
+      // 웰
+      o += '<rect x="' + (x - 24) + '" y="' + (top - 4) + '" width="48" height="5" fill="#0d111b"/>';
+      if (l.smear) o += '<rect x="' + (x - 22) + '" y="' + yOf(1200, top, H) + '" width="44" height="' + (yOf(80, top, H) - yOf(1200, top, H)) + '" fill="#dfe6f3" opacity="0.1"/>';
+      l.bands.forEach(function (b) {
+        if (b.inten <= 0.02 || b.size > MAX_BP) return;
+        var y = yOf(b.size, top, H), op = 0.2 + 0.8 * Math.min(1, b.inten);
+        o += '<rect x="' + (x - 24) + '" y="' + (y - 3) + '" width="48" height="6" rx="1" fill="' + (b.dimer ? '#ffd9a8' : '#f3f6ff') + '" opacity="' + op.toFixed(2) + '"/>';
+        o += '<text x="' + (x + 27) + '" y="' + (y + 4) + '" font-size="10.5" fill="' + (b.dimer ? '#ffd9a8' : '#c9d3e6') + '">' + b.size + '</text>';
+      });
+    });
+    o += '<text x="' + (left - 12) + '" y="' + (height - 4) + '" text-anchor="end" font-size="10" fill="#5b6878">bp</text></svg>';
+    $('gel').innerHTML = o;
+  }
+  function drawMelt(lanes) {
+    var width = 520, height = 220, left = 40, right = 16, top = 24, bottom = 36, pw = width - left - right, ph = height - top - bottom;
+    var T0 = 65, T1 = 95;
+    function xOf(t) { return left + (t - T0) / (T1 - T0) * pw; }
+    var o = '<svg viewBox="0 0 ' + width + ' ' + height + '" width="100%" style="max-width:' + width + 'px" role="img" aria-label="녹는점 곡선">';
+    o += '<line x1="' + left + '" y1="' + (top + ph) + '" x2="' + (left + pw) + '" y2="' + (top + ph) + '" stroke="#d9e1ea"/>';
+    for (var t = T0; t <= T1; t += 5) o += '<line x1="' + xOf(t) + '" y1="' + (top + ph) + '" x2="' + xOf(t) + '" y2="' + (top + ph + 4) + '" stroke="#9aa6b4"/><text x="' + xOf(t) + '" y="' + (top + ph + 16) + '" text-anchor="middle" font-size="11" fill="#5b6878">' + t + '</text>';
+    o += '<text x="' + (left + pw / 2) + '" y="' + (height - 4) + '" text-anchor="middle" font-size="11" fill="#5b6878">온도 (°C)</text>';
+    o += '<text x="12" y="' + (top + ph / 2) + '" text-anchor="middle" font-size="11" fill="#5b6878" transform="rotate(-90 12 ' + (top + ph / 2) + ')">−dF/dT</text>';
+    var legend = '';
+    lanes.forEach(function (l, li) {
+      var pts = [];
+      for (var x = 0; x <= pw; x += 2) {
+        var tt = T0 + x / pw * (T1 - T0), y = 0;
+        l.bands.forEach(function (b) { if (b.inten > 0.02 && b.size <= MAX_BP) y += b.inten * Math.exp(-Math.pow((tt - b.tm) / 1.3, 2) / 2); });
+        pts.push((left + x).toFixed(1) + ',' + (top + ph - Math.min(1.15, y) * ph * 0.85).toFixed(1));
+      }
+      o += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="' + COLOR[l.name] + '" stroke-width="2" opacity="0.9"/>';
+      l.bands.forEach(function (b) {
+        if (b.inten <= 0.3 || b.size > MAX_BP) return;
+        o += '<text x="' + xOf(b.tm) + '" y="' + (top + ph - Math.min(1.15, b.inten) * ph * 0.85 - 6 - li * 0) + '" text-anchor="middle" font-size="10.5" fill="' + COLOR[l.name] + '">' + b.size + ' bp · ' + b.tm.toFixed(0) + '°</text>';
+      });
+      legend += '<rect x="' + (left + 8 + li * 70) + '" y="' + (top - 16) + '" width="12" height="3" fill="' + COLOR[l.name] + '"/><text x="' + (left + 24 + li * 70) + '" y="' + (top - 12) + '" font-size="11" fill="#5b6878">' + l.name + '</text>';
+    });
+    o += legend + '</svg>';
+    $('melt').innerHTML = o;
+  }
+
+  $('go').addEventListener('click', run);
+  $('ex').addEventListener('click', function () {
+    if (!window.EXAMPLE_HBB) return;
+    $('c').value = EXAMPLE_HBB.mrna; $('g').value = EXAMPLE_HBB.gdna; $('gopt').open = true;
+    $('f').value = EXAMPLE_HBB.f; $('r').value = EXAMPLE_HBB.r; $('ta').value = '60';
+    run();
+  });
+  ['f', 'r', 'ta'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') run(); }); });
+})();
+</script>
+</body>
+</html>
