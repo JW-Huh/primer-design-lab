@@ -71,9 +71,9 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
 
     <div id="checks" class="res-list"></div>
 
-    <h2 style="margin-top:22px">qPCR 조건 (SYBR Green, 2단계)</h2>
+    <h2 style="margin-top:22px">qPCR 조건 (SYBR Green, 2단계 표준 조건)</h2>
     <table class="prog" id="prog"></table>
-    <p class="hint">qPCR 산물은 짧아서(70–150 bp) 결합과 연장을 60 °C 한 단계로 합칩니다. 그래서 두 프라이머의 Tm이 60 °C 근처여야 합니다. 마지막 녹는점 곡선(melt curve)에서 봉우리가 하나면 산물이 한 종류라는 뜻입니다. 시약마다 초기 변성 시간이 다르니(2–10분) 제품 설명서를 따릅니다.</p>
+    <p class="hint">qPCR 산물은 짧아서(70–150 bp) 결합과 연장을 60 °C 한 단계로 합칩니다. 그래서 두 프라이머의 Tm이 60 °C 근처여야 하고, 조건표는 프라이머에 따라 바뀌지 않습니다. 마지막 녹는점 곡선(melt curve)에서 봉우리가 하나면 산물이 한 종류일 가능성이 높습니다. 시약마다 초기 변성 시간이 다르니(2–10분) 제품 설명서를 따릅니다.</p>
 
     <h2 style="margin-top:22px">두 가닥 서열</h2>
     <div class="legend">
@@ -128,6 +128,7 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
     var size = rb - fa + 1;
     var cs = parseInt($('cs').value, 10), ce = parseInt($('ce').value, 10);
     var hasCds = cs > 0 && ce >= cs && ce <= t.length;
+    if (!hasCds && ($('cs').value.trim() || $('ce').value.trim())) note('warn', 'CDS 위치가 맞지 않아 표시하지 않았어요. 시작 ≥ 1, 끝 ≤ ' + t.length + ', 시작 ≤ 끝이어야 합니다.');
     var tf = DNA.tmNN(f, DNA.PRIMERBLAST), tr = DNA.tmNN(r, DNA.PRIMERBLAST);
     state = { t: t, f: f, r: r, fa: fa, fb: fb, ra: ra, rb: rb, size: size, cs: hasCds ? cs - 1 : -1, ce: hasCds ? ce - 1 : -1 };
 
@@ -136,9 +137,10 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
     if (size >= 70 && size <= 150) chk('ok', 'PCR 산물 ' + size + ' bp — qPCR에 알맞은 길이(70–150 bp)입니다.');
     else chk('err', 'PCR 산물 ' + size + ' bp — qPCR은 70–150 bp가 좋아요. ' + (size < 70 ? '너무 짧으면 프라이머 이합체와 구분이 어렵습니다.' : '길면 한 사이클 안에 다 복제되지 않아 효율이 떨어집니다.'));
     if (tf && tr) {
-      var lo = Math.min(tf.tm, tr.tm), d = Math.abs(tf.tm - tr.tm);
-      chk(lo >= 57 && d <= 3 ? 'ok' : 'err', 'Tm (Primer-BLAST 조건) Forward ' + tf.tm.toFixed(1) + ' °C, Reverse ' + tr.tm.toFixed(1) + ' °C, 차이 ' + d.toFixed(1) + ' °C' +
-        (lo >= 57 && d <= 3 ? ' — 60 °C 2단계 조건에 맞습니다.' : ' — qPCR은 두 Tm이 모두 57 °C 이상, 차이 3 °C 이내가 좋아요.'));
+      var lo = Math.min(tf.tm, tr.tm), hi = Math.max(tf.tm, tr.tm), d = Math.abs(tf.tm - tr.tm);
+      var tmOk = lo >= 57 && hi <= 63 && d <= 3;
+      chk(tmOk ? 'ok' : 'err', 'Tm (Primer-BLAST 조건) Forward ' + tf.tm.toFixed(1) + ' °C, Reverse ' + tr.tm.toFixed(1) + ' °C, 차이 ' + d.toFixed(1) + ' °C' +
+        (tmOk ? ' — 60 °C 2단계 조건에 맞습니다.' : ' — qPCR은 두 Tm이 모두 57–63 °C, 차이 3 °C 이내가 좋아요.'));
     }
 
     var cdsText = '입력 안 함';

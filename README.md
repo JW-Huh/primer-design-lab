@@ -10,7 +10,7 @@
 |---|---|
 | [10주차 따라하기](week10/README.md) | Part 1 이론 → Part 2 실습. 위에서부터 순서대로 읽으며 따라오세요 |
 | [NCBI 찾아가기 안내](week10/ncbi-guide.md) | 유전자 서열 직접 찾는 법, RefSeq · CDS 뜻 |
-| [기록지](week10/worksheet.md) | 실습하면서 채우는 기록지 |
+| [기록지](week10/worksheet.md) | 실습하면서 채우는 기록지. 제출 형식은 맨 아래 "제출 안내" |
 
 ## 웹 도구
 

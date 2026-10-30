@@ -85,9 +85,10 @@ pre.pic { font: 13px/1.35 var(--font-mono); background: #f6f8fb; border: 1px sol
 
   function run() {
     var f = DNA.clean($('f').value), r = DNA.clean($('r').value);
-    if (!f && !r) { $('err').textContent = '프라이머를 하나 이상 넣어 주세요.'; $('err').hidden = false; return; }
+    // 오류가 나면 이전 결과도 숨긴다 (새 결과로 착각하지 않도록)
+    if (!f && !r) { $('err').textContent = '프라이머를 하나 이상 넣어 주세요.'; $('err').hidden = false; $('out').hidden = true; return; }
     var e = (f && DNA.check(f)) || (r && DNA.check(r));
-    if (e) { $('err').textContent = e; $('err').hidden = false; return; }
+    if (e) { $('err').textContent = e; $('err').hidden = false; $('out').hidden = true; return; }
     $('err').hidden = true; $('out').hidden = false;
     $('res').innerHTML = (f ? block('Forward', f) : '') + (r ? block('Reverse', r) : '');
     if (f && r) {

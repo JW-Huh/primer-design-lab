@@ -98,10 +98,11 @@
     var L = s.length, best = { stem: 0 };
     for (var i = 0; i < L; i++) {
       for (var j = L - 1; j > i; j--) {
+        // 고리가 3 nt 미만이 되기 직전까지만 짝을 늘린다 (끝까지 늘린 뒤 버리면 짧은 줄기를 놓침)
         var k = 0;
-        while (i + k < j - k && pairs(s[i + k], s[j - k])) k++;
-        var loop = (j - k) - (i + k) + 1;
-        if (k > best.stem && loop >= 3) best = { stem: k, i: i, j: j, loop: loop, end3: j === L - 1 };
+        while (j - i - 2 * k - 1 >= 3 && pairs(s[i + k], s[j - k])) k++;
+        var loop = j - i - 2 * k + 1;
+        if (k > best.stem) best = { stem: k, i: i, j: j, loop: loop, end3: j === L - 1 };
       }
     }
     return best;
