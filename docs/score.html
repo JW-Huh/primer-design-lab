@@ -118,25 +118,25 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
       pr.forEach(function (x) { var r = f(x.s); v.push(x.n + ' ' + r[0]); p += r[1]; });
       add(name, rule, v.join(' · '), p, max);
     }
-    per('길이', '18–24 nt', 8, function (s) { var L = s.length; return [L + ' nt', L >= 18 && L <= 24 ? 4 : (L >= 16 && L <= 28 ? 2 : 0)]; });
-    per('GC 비율', '40–60%', 8, function (s) { var g = DNA.gcPercent(s); return [g.toFixed(0) + '%', g >= 40 && g <= 60 ? 4 : (g >= 35 && g <= 65 ? 2 : 0)]; });
+    per('길이', '18–24 nt', 6, function (s) { var L = s.length; return [L + ' nt', L >= 18 && L <= 24 ? 3 : (L >= 17 && L <= 26 ? 1 : 0)]; });
+    per('GC 비율', '40–60%', 6, function (s) { var g = DNA.gcPercent(s); return [g.toFixed(0) + '%', g >= 40 && g <= 60 ? 3 : (g >= 35 && g <= 65 ? 1 : 0)]; });
     var tms = pr.map(function (x) { return DNA.tmNN(x.s, DNA.DESIGN).tm; });
-    per('Tm', '58–62 °C (③ 설계 기준)', 10, function (s) { var t = DNA.tmNN(s, DNA.DESIGN).tm, d = Math.abs(t - 60); return [t.toFixed(1) + ' °C', d <= 2 ? 5 : d <= 3 ? 4 : d <= 5 ? 2 : 0]; });
+    per('Tm', '58–62 °C (③ 설계 기준)', 8, function (s) { var t = DNA.tmNN(s, DNA.DESIGN).tm, d = Math.abs(t - 60); return [t.toFixed(1) + ' °C', d <= 2 ? 4 : d <= 3 ? 2 : d <= 4 ? 1 : 0]; });
     var dt = Math.abs(tms[0] - tms[1]);
-    add('Tm 차이', '2 °C 이내', dt.toFixed(1) + ' °C', dt <= 1 ? 6 : dt <= 2 ? 5 : dt <= 3 ? 3 : dt <= 5 ? 1 : 0, 6);
-    per('3′ 끝', '마지막 5 nt 중 G/C 1–3개', 6, function (s) { var g = (s.substr(-5).match(/[GC]/g) || []).length; return ['G/C ' + g, g >= 1 && g <= 3 ? 3 : g === 4 ? 1 : g === 0 ? 1 : 0]; });
+    add('Tm 차이', '2 °C 이내', dt.toFixed(1) + ' °C', dt <= 1 ? 5 : dt <= 2 ? 4 : dt <= 3 ? 1 : 0, 5);
+    per('3′ 끝', '마지막 5 nt 중 G/C 1–3개', 6, function (s) { var g = (s.substr(-5).match(/[GC]/g) || []).length; return ['G/C ' + g, g >= 1 && g <= 3 ? 3 : g === 0 ? 1 : 0]; });
     per('반복 서열', '같은 염기 4개, 두 염기 4번 반복 없음', 4, function (s) {
       var run = (s.match(/(A{4,}|C{4,}|G{4,}|T{4,})/) || [''])[0], di = /(AC|AG|AT|CA|CG|CT|GA|GC|GT|TA|TC|TG)\1{3,}/.test(s);
-      return [run ? run : di ? '두 염기 반복' : '없음', run.length >= 5 ? 0 : (run || di) ? 1 : 2];
+      return [run ? run : di ? '두 염기 반복' : '없음', (run || di) ? 0 : 2];
     });
     per('머리핀', '60 °C에서 ΔG −1 kcal/mol보다 약함', 6, function (s) {
       var h = PCRSIM.hairpinDG(s); if (!h) return ['없음', 3];
-      var g = PCRSIM.dG(h.dH, h.dS, 60); return ['줄기 ' + h.stem + ' bp, ' + g.toFixed(1), g >= -1 ? 3 : g >= -2 ? 2 : g >= -3 ? 1 : 0];
+      var g = PCRSIM.dG(h.dH, h.dS, 60); return ['줄기 ' + h.stem + ' bp, ' + g.toFixed(1), g >= -1 ? 3 : g >= -2 ? 1 : 0];
     });
     var worst = 0, wl = '';
     [[F, R, 'F+R'], [F, F, 'F+F'], [R, R, 'R+R']].forEach(function (x) { var d = DNA.dimer(x[0], x[1]).best3.run || 0; if (d > worst) { worst = d; wl = x[2]; } });
-    add('3′ 끝 이합체', '3′ 끝끼리 3 bp 이하', worst ? wl + ' ' + worst + ' bp' : '없음', worst <= 3 ? 10 : worst === 4 ? 6 : worst === 5 ? 3 : 0, 10);
-    add('앰플리콘', '80–150 bp', size + ' bp', size >= 80 && size <= 150 ? 8 : size >= 70 && size < 80 ? 7 : size > 150 && size <= 200 ? 4 : size >= 60 && size < 70 ? 3 : 0, 8);
+    add('3′ 끝 이합체', '3′ 끝끼리 3 bp 이하', worst ? wl + ' ' + worst + ' bp' : '없음', worst <= 3 ? 8 : worst === 4 ? 3 : 0, 8);
+    add('앰플리콘', '80–150 bp', size + ' bp', size >= 80 && size <= 150 ? 5 : size >= 70 && size < 80 ? 3 : size > 150 && size <= 200 ? 1 : 0, 5);
 
     var gene = PCRSIM.detectGene(mRaw, M);
     var sim = PCRSIM.run({ M: M, G: G, gene: gene, geneLabel: gene, contam: true, seed: SEED, pairs: [{ name: 'A', F: F, R: R }] }).pairs[0];
@@ -147,12 +147,11 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     var spanF = DNA.exonOf(ex, fa) !== DNA.exonOf(ex, fb), spanR = DNA.exonOf(ex, ra) !== DNA.exonOf(ex, rb);
     var gvis = gl ? gl.bands.filter(function (b) { return b.ng >= VIS && !b.dimer; }) : [];
     var same = gvis.some(function (b) { return Math.abs(b.size - size) / size < 0.03; });
-    var gv, gp;
-    if (spanF || spanR) { gv = (spanF && spanR ? '두 프라이머가' : spanF ? 'F가' : 'R이') + ' 엑손 경계에 걸침'; gp = gvis.length ? 5 : 10; if (gvis.length) gv += ', 그래도 gDNA 산물 ' + gvis[0].size + ' bp'; }
-    else if (!gvis.length) { gv = '경계에 안 걸침, gDNA 산물 없음(인트론이 김)'; gp = 8; }
-    else if (!same) { gv = '경계에 안 걸침, gDNA 산물 ' + gvis.map(function (b) { return b.size; }).join(', ') + ' bp'; gp = 5; }
-    else { gv = '같은 엑손 안, gDNA 산물 ' + size + ' bp (구분 불가)'; gp = 0; }
-    add('gDNA 구분', '한 프라이머가 엑손 경계에 걸침', gv, gp, 10);
+    var gv = spanF || spanR ? (spanF && spanR ? '두 프라이머가' : spanF ? 'F가' : 'R이') + ' 엑손 경계에 걸침' : '경계에 안 걸침', gp;
+    if (!gvis.length) { gv += ', gDNA 산물 없음'; gp = spanF || spanR ? 20 : 12; }
+    else if (!same) { gv += ', gDNA 산물 ' + gvis.map(function (b) { return b.size; }).join(', ') + ' bp (크기 다름)'; gp = 6; }
+    else { gv += ', gDNA 산물 ' + size + ' bp (cDNA와 같은 크기, 구분 불가)'; gp = 0; }
+    add('gDNA 구분', 'gDNA에서 산물이 안 생김', gv, gp, 20);
 
     // 특이성: cDNA 레인 산물 중 내 mRNA 산물의 비율
     var tgtNg = 0, allNg = 0, others = {};
@@ -165,18 +164,23 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     }); });
     if (cd.smearNg >= 0.05) { allNg += cd.smearNg; others['여러 크기 비특이 산물'] = 1; }
     var frac = allNg ? tgtNg / allNg : 0;
-    add('특이성', 'cDNA 산물이 모두 내 mRNA에서', Math.round(frac * 100) + '%' + (Object.keys(others).length ? ' (그 밖: ' + Object.keys(others).slice(0, 3).join(', ') + ')' : ''), frac >= 0.99 ? 14 : frac >= 0.95 ? 11 : frac >= 0.8 ? 7 : frac >= 0.5 ? 3 : 0, 14);
+    add('특이성', 'cDNA 산물이 모두 내 mRNA에서', Math.round(frac * 100) + '%' + (Object.keys(others).length ? ' (그 밖: ' + Object.keys(others).slice(0, 3).join(', ') + ')' : ''), frac >= 0.99 ? 16 : frac >= 0.95 ? 10 : frac >= 0.8 ? 4 : 0, 16);
 
     var sp = 0, sv = [];
-    if (cd.ct && tgtNg >= VIS) { sp += cd.ct <= 24 ? 4 : cd.ct <= 27 ? 3 : cd.ct <= 31 ? 2 : 1; sv.push('cDNA Ct ' + cd.ct.toFixed(1) + (cd.ct > 24 ? ' (늦음)' : '')); } else sv.push('cDNA 산물 없음');
-    if (!ntc.ct) { sp += 6; sv.push('NTC 깨끗'); }
-    else { var d = cd.ct ? ntc.ct - cd.ct : 0; sp += d >= 15 ? 4 : d >= 10 ? 2 : 0; sv.push('NTC Ct ' + ntc.ct.toFixed(1)); }
+    var ctOk = cd.ct && tgtNg >= VIS;
+    if (ctOk) { sp += cd.ct <= 24 ? 6 : cd.ct <= 26 ? 3 : cd.ct <= 28 ? 1 : 0; sv.push('cDNA Ct ' + cd.ct.toFixed(1) + (cd.ct > 24 ? ' (늦음)' : '')); } else sv.push('cDNA 산물 없음');
+    if (!ntc.ct) { sp += 4; sv.push('NTC 깨끗'); }
+    else { var d = cd.ct ? ntc.ct - cd.ct : 0; sp += d >= 15 ? 2 : 0; sv.push('NTC Ct ' + ntc.ct.toFixed(1)); }
     add('시뮬레이션', 'cDNA Ct 24 이하, NTC 깨끗', sv.join(', '), sp, 10);
 
-    var total = items.reduce(function (a, b) { return a + b.pts; }, 0);
-    return { total: total, items: items, gene: gene, size: size, tms: tms };
+    var total = items.reduce(function (a, b) { return a + b.pts; }, 0), cap = '';
+    // gDNA가 섞였을 때 cDNA와 같은 크기 산물이 나오면 qPCR 신호를 믿을 수 없으므로 상한을 둔다
+    if (same) { cap = 'gDNA에서 같은 크기 산물이 나와 최대 59점'; total = Math.min(total, 59); }
+    // 증폭이 너무 늦으면(효율이 낮으면) qPCR에 쓸 수 없다
+    else if (!ctOk || cd.ct > 28) { cap = (ctOk ? 'cDNA Ct가 28보다 늦어' : 'cDNA 산물이 없어') + ' 최대 64점'; total = Math.min(total, 64); }
+    return { total: total, items: items, gene: gene, size: size, tms: tms, cap: cap };
   }
-  function grade(t) { return t >= 90 ? '아주 좋음' : t >= 75 ? '좋음' : t >= 60 ? '쓸 수는 있음' : '다시 설계'; }
+  function grade(t) { return t >= 90 ? '아주 좋음' : t >= 80 ? '좋음' : t >= 65 ? '쓸 수는 있음' : '다시 설계'; }
   function lv(p, m) { return p >= m ? 'lv-ok' : p >= m / 2 ? 'lv-warn' : 'lv-bad'; }
 
   var cur = null;
@@ -190,7 +194,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     $('err').hidden = true;
     cur = { s: s, F: F, R: R, m: mRaw, g: $('g').value };
     $('tot').innerHTML = s.total + '<small> / 100</small>';
-    $('grade').textContent = grade(s.total) + (s.gene ? ' · ' + s.gene : '') + ' · 앰플리콘 ' + s.size + ' bp';
+    $('grade').textContent = grade(s.total) + (s.gene ? ' · ' + s.gene : '') + ' · 앰플리콘 ' + s.size + ' bp' + (s.cap ? ' · ' + s.cap : '');
     var h = '<tr><th>항목</th><th>기준</th><th>내 쌍</th><th>점수</th></tr>';
     s.items.forEach(function (it) { h += '<tr><td>' + it.name + '</td><td>' + it.rule + '</td><td class="m">' + esc(it.value) + '</td><td class="p ' + lv(it.pts, it.max) + '">' + it.pts + ' / ' + it.max + '</td></tr>'; });
     $('tbl').innerHTML = h;
@@ -231,7 +235,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
       var jt = b.items[i];
       h += '<tr><td>' + it.name + '</td><td class="m">' + it.max + '</td><td><span class="p ' + lv(it.pts, it.max) + '">' + it.pts + '</span> <span class="hint">' + esc(it.value) + '</span></td><td><span class="p ' + lv(jt.pts, jt.max) + '">' + jt.pts + '</span> <span class="hint">' + esc(jt.value) + '</span></td></tr>';
     });
-    h += '<tr><td><b>합계</b></td><td class="m">100</td><td class="p">' + a.total + '</td><td class="p">' + b.total + '</td></tr>';
+    h += '<tr><td><b>합계</b></td><td class="m">100</td><td class="p">' + a.total + (a.cap ? ' <span class="hint">(' + a.cap + ')</span>' : '') + '</td><td class="p">' + b.total + (b.cap ? ' <span class="hint">(' + b.cap + ')</span>' : '') + '</td></tr>';
     $('cmp').innerHTML = h;
     $('toPcr').hidden = false;
   }
