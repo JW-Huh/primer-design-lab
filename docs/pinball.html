@@ -93,11 +93,23 @@
     else { for (var k2 = 1; k2 < N; k2++) pegs.push([k2 * SW, y]); }
   }
 
-  // 같은 학번 → 같은 결과
-  function pick(id) {
-    var s = 'PRIMER-2026|' + id.trim().toUpperCase(), h = 2166136261;
+  // 같은 학번 → 같은 결과.
+  // 학번 뒤 3자리(일련번호)를 8개씩 묶어(000–007, 008–015, …) 한 묶음 안에서는 8개 유전자가 하나씩 나오게 하고,
+  // 묶음마다 순서는 '앞 6자리 + 묶음 번호'의 해시로 섞는다. 연속된 학번이면 아주 고르게 나뉘고,
+  // 띄엄띄엄한 학번은 무작위처럼 퍼진다(특정 유전자로 몰리지 않음).
+  function hash32(s) {
+    var h = 2166136261;
     for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return (h >>> 0) % N;
+    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 16;
+    return h >>> 0;
+  }
+  function pick(id) {
+    var s = id.trim(), pre = s.slice(0, 6), ser = parseInt(s.slice(6), 10) || 0;
+    var block = Math.floor(ser / N), pos = ser % N, perm = [];
+    for (var i = 0; i < N; i++) perm.push(i);
+    var r = rng(hash32('PRIMER-2026|' + pre + '|' + block));
+    for (var j = N - 1; j > 0; j--) { var k = Math.floor(r() * (j + 1)), t = perm[j]; perm[j] = perm[k]; perm[k] = t; }
+    return perm[pos];
   }
   function rng(seed) {
     return function () {
