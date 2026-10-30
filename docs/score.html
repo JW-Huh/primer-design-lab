@@ -136,7 +136,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     var worst = 0, wl = '';
     [[F, R, 'F+R'], [F, F, 'F+F'], [R, R, 'R+R']].forEach(function (x) { var d = DNA.dimer(x[0], x[1]).best3.run || 0; if (d > worst) { worst = d; wl = x[2]; } });
     add('3′ 끝 이합체', '3′ 끝끼리 3 bp 이하', worst ? wl + ' ' + worst + ' bp' : '없음', worst <= 3 ? 8 : worst === 4 ? 3 : 0, 8);
-    add('앰플리콘', '80–150 bp', size + ' bp', size >= 80 && size <= 150 ? 5 : size >= 70 && size < 80 ? 3 : size > 150 && size <= 200 ? 1 : 0, 5);
+    add('앰플리콘', '70–150 bp', size + ' bp', size >= 70 && size <= 150 ? 5 : (size > 150 && size <= 200) || (size >= 60 && size < 70) ? 1 : 0, 5);
 
     var gene = PCRSIM.detectGene(mRaw, M);
     var sim = PCRSIM.run({ M: M, G: G, gene: gene, geneLabel: gene, contam: true, seed: SEED, pairs: [{ name: 'A', F: F, R: R }] }).pairs[0];

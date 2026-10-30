@@ -223,6 +223,24 @@
       else ex.push({ ms: b.ms, me: b.me, gs: b.gs, ge: b.ge });
     });
     ex = ex.filter(function (b) { return b.me - b.ms + 1 >= 18; });
+    // 경계 바로 옆 염기가 양쪽 엑손 어디에나 맞을 때는 경계를 밀 수 있다.
+    // 그 범위 안에서 인트론이 GT로 시작해 AG로 끝나는 자리(스플라이싱 규칙)로 경계를 옮긴다. NCBI 레코드도 이 규칙을 따른다.
+    for (var k = 0; k + 1 < ex.length; k++) {
+      var e1 = ex[k], e2 = ex[k + 1], o1 = e1.gs - e1.ms, o2 = e2.gs - e2.ms;
+      if (e2.ms !== e1.me + 1) continue;
+      var b0 = e1.me, best = null;
+      for (var d = -12; d <= 12; d++) {
+        var b = b0 + d, ok = b > e1.ms && b < e2.me;
+        for (var x = Math.min(b, b0) + 1; ok && x <= Math.max(b, b0); x++) ok = d < 0 ? M[x] === G[x + o2] : M[x] === G[x + o1];
+        if (!ok) continue;
+        var donor = G.substr(b + o1 + 1, 2), acc = G.substr(b + 1 + o2 - 2, 2);
+        var sc = (donor === 'GT' ? 2 : donor === 'GC' ? 1 : 0) + (acc === 'AG' ? 2 : 0);
+        if (!best || sc > best.sc || (sc === best.sc && Math.abs(d) < Math.abs(best.d))) best = { sc: sc, d: d };
+      }
+      if (best && best.d && best.sc >= 3) {
+        e1.me += best.d; e1.ge += best.d; e2.ms += best.d; e2.gs += best.d;
+      }
+    }
     var covered = ex.reduce(function (a, b) { return a + (b.me - b.ms + 1); }, 0);
     return { exons: ex, cover: M.length ? covered / M.length : 0, G: G, flipped: false };
   }

@@ -398,8 +398,7 @@ ul.assume li { margin: 3px 0; }
       if (size < 70 || size > 150) msg('verdict', 'warn', line + ' qPCR 앰플리콘은 70–150 bp가 좋습니다.');
       else if (!cd.ct || cd.ct > 26) msg('verdict', 'warn', line + ' Ct가 늦습니다. 사이클마다 산물이 두 배로 늘지 못하고 있다는 뜻입니다.');
       else msg('verdict', 'ok', line);
-      if (cd.smearNg >= 1) msg('verdict', 'err', who + 'cDNA 레인에 여러 크기의 비특이 산물이 번져 있습니다 (' + fmtNg(cd.smearNg) + ' ng). 프라이머가 3′ 끝 몇 염기만 맞는 수많은 자리에도 붙었다는 뜻입니다.');
-      if (gl && gl.smearNg >= 1) msg('verdict', 'err', who + 'gDNA 레인에 비특이 산물이 번져 있습니다 (' + fmtNg(gl.smearNg) + ' ng). 유전체는 전사체보다 훨씬 커서 우연히 맞는 자리가 더 많습니다.');
+      if (cd.smearNg >= 1) msg('verdict', 'err', who + 'cDNA 레인에 여러 크기의 비특이 산물이 번져(smear) 있습니다 (' + fmtNg(cd.smearNg) + ' ng). 밴드 하나로 모이지 않는 이 산물은 프라이머가 3′ 끝 몇 염기만 맞는 수많은 자리에 붙어 생깁니다.');
       var share = tgt.ng / tgt.band.ng;
       if (share < 0.95) {
         var others = {}; tgt.band.parts.forEach(function (x) { if (x !== tgt.part) { var n = x.dimer ? '프라이머 이합체' : srcName(x.p); others[n] = (others[n] || 0) + x.ng; } });
@@ -412,9 +411,13 @@ ul.assume li { margin: 3px 0; }
       if (dimC.length) msg('verdict', 'warn', who + 'cDNA 레인에도 프라이머 이합체가 보입니다.');
       if (gl) {
         var gv = gl.bands.filter(function (b) { return b.ng >= VIS && !b.dimer; });
-        if (!gv.length) msg('verdict', 'ok', who + 'gDNA 레인에 산물이 없습니다. 유전체 DNA가 섞여도 신호가 생기지 않습니다.');
-        else if (gv.some(function (b) { return Math.abs(b.size - size) / size < 0.03; })) msg('verdict', 'err', who + 'gDNA 레인에 cDNA와 같은 크기(' + size + ' bp) 산물이 있습니다. 유전체 DNA가 섞이면 구분할 수 없습니다.');
-        else msg('verdict', 'warn', who + 'gDNA 레인에 ' + gv.map(function (b) { return b.size + ' bp'; }).join(', ') + ' 산물이 있습니다. cDNA 산물과 크기가 달라 젤과 Tm 곡선으로는 구분됩니다.');
+        if (!gv.length) {
+          if (gl.smearNg >= 1) msg('verdict', 'warn', who + 'gDNA에서 두 프라이머가 정해진 자리에 붙어 만드는 뚜렷한 앰플리콘(밴드)은 없습니다. 다만 비특이 증폭에 의한 번짐(smear)이 ' + fmtNg(gl.smearNg) + ' ng 있어서, 유전체 DNA가 섞이면 SYBR 형광 신호에 영향을 줄 수 있습니다. 유전체는 전사체보다 훨씬 커서 3′ 끝이 우연히 맞는 자리가 더 많습니다.');
+          else if (gl.ct) msg('verdict', 'ok', who + 'gDNA에서 뚜렷한 앰플리콘도 번짐도 생기지 않습니다. gDNA 레인의 늦은 신호(Ct ' + gl.ct.toFixed(1) + ')는 프라이머 이합체입니다.');
+          else msg('verdict', 'ok', who + 'gDNA에서 뚜렷한 앰플리콘도 번짐도 생기지 않습니다. 유전체 DNA가 섞여도 신호가 거의 생기지 않습니다.');
+        }
+        else if (gv.some(function (b) { return Math.abs(b.size - size) / size < 0.03; })) msg('verdict', 'err', who + 'gDNA 레인에 cDNA와 같은 크기(' + size + ' bp)의 뚜렷한 밴드가 있습니다. 유전체 DNA가 섞이면 구분할 수 없습니다.' + (gl.smearNg >= 1 ? ' 번짐(smear)도 ' + fmtNg(gl.smearNg) + ' ng 있습니다.' : ''));
+        else msg('verdict', 'warn', who + 'gDNA 레인에 ' + gv.map(function (b) { return b.size + ' bp'; }).join(', ') + '의 뚜렷한 밴드가 있습니다. cDNA 산물과 크기가 달라 젤과 Tm 곡선으로는 구분되지만, SYBR 형광에는 함께 잡힙니다.' + (gl.smearNg >= 1 ? ' 번짐(smear)도 ' + fmtNg(gl.smearNg) + ' ng 있습니다.' : ''));
       }
       var nv = ntc.bands.filter(function (b) { return b.ng >= VIS; });
       if (!ntc.ct && !nv.length) msg('verdict', 'ok', who + 'NTC 깨끗.');

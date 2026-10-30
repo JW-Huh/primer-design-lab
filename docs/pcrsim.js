@@ -139,12 +139,20 @@
   // 3′ 끝 k nt가 맞고 그 앞은 무작위(4분의 1 확률로 맞음)인 자리를 뽑아 결합 비율의 평균을 낸다.
   // 결합 온도가 낮으면 틀린 염기가 몇 개 섞인 자리도 붙기 때문에 k가 짧은 자리가 크게 늘어난다.
   var BASES = 'ACGT';
-  function primeP(p, T, unf, kin, B) {
+  // 서열 구성: 사람 유전체는 GC 41%, CG 이웃 쌍이 기대값의 약 1/4 (CpG 결핍). 전사체는 GC 약 50%, CG 약 1/2로 둔다.
+  var COMPO = { cdna: { gc: 0.50, cpg: 0.5 }, gdna: { gc: 0.41, cpg: 0.24 } };
+  function kmerFreq(s, c) {
+    var f = 1;
+    for (var i = 0; i < s.length; i++) f *= (s[i] === 'G' || s[i] === 'C') ? c.gc / 2 : (1 - c.gc) / 2;
+    var cg = (s.match(/CG/g) || []).length;
+    return f * Math.pow(c.cpg, cg);
+  }
+  function primeP(p, T, unf, kin, B, compo) {
     var P = 0, L = p.length, h = 0;
     for (var i = 0; i < L; i++) h = (h * 31 + p.charCodeAt(i)) >>> 0;
     var rr = rng(h || 1), NS = 80;
     for (var k = 6; k <= Math.min(16, L - 1); k++) {
-      var nk = 2 * B * 0.75 * Math.pow(4, -k), sum = 0;
+      var nk = 2 * B * 0.75 * kmerFreq(p.substr(L - k), compo), sum = 0;
       for (var n = 0; n < NS; n++) {
         var s = '';
         for (var j = 0; j < L; j++) {
@@ -254,8 +262,8 @@
         p.dH = d.dH; p.dS = d.dS; p.theta = theta(d.dH, d.dS, T, p.unf); p.tmMix = tmSite(d.dH, d.dS);
         p.phi = p.theta * kin;
         var pb = D.tmNN(p.seq, D.DESIGN); p.tm = pb ? pb.tm : NaN;
-        p.Pc = primeP(p.seq, T, p.unf, kin, BG.cdna.B);
-        p.Pg = p.Pc * BG.gdna.B / BG.cdna.B;
+        p.Pc = primeP(p.seq, T, p.unf, kin, BG.cdna.B, COMPO.cdna);
+        p.Pg = primeP(p.seq, T, p.unf, kin, BG.gdna.B, COMPO.gdna);
       });
       var PcT = prs[0].Pc + prs[1].Pc, PgT = prs[0].Pg + prs[1].Pg;
       // 프라이머 이합체 후보
