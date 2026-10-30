@@ -54,9 +54,6 @@
         <label class="field" for="sid">학번</label>
         <input type="text" id="sid" inputmode="numeric" autocomplete="off" maxlength="9" placeholder="예: 202612345">
         <p class="hint">202로 시작하는 9자리 숫자</p>
-        <label class="field" for="code" style="margin-top:12px">분반 코드 (선택)</label>
-        <input type="text" id="code" autocomplete="off" maxlength="5" placeholder="예: K7M2Q" style="text-transform:uppercase">
-        <p class="hint">선생님이 알려 준 5자리 코드가 있으면 넣습니다.</p>
         <div class="row" style="margin-top:12px">
           <button class="btn" id="go" type="button">공 굴리기</button>
         </div>
@@ -97,7 +94,7 @@
     else { for (var k2 = 1; k2 < N; k2++) pegs.push([k2 * SW, y]); }
   }
 
-  // 같은 학번(+ 같은 분반 코드) → 같은 결과. 규칙은 assign.js
+  // 같은 학번 → 같은 결과. 규칙은 assign.js
   if (ASSIGN.SYMS.join() !== GENES.map(function (g) { return g.sym; }).join()) console.error('assign.js의 유전자 순서가 GENES와 다릅니다');
   function rng(seed) {
     return function () {
@@ -235,9 +232,7 @@
     if (!/^202\d{6}$/.test(id)) { err.textContent = id ? '학번은 202로 시작하는 9자리 숫자예요. 다시 확인해 주세요.' : '학번을 먼저 입력하세요.'; err.hidden = false; sid.focus(); return; }
     err.hidden = true; busy = true; go.disabled = true; win = -1; confetti = [];
     bubble.classList.remove('show');
-    var code = ASSIGN.normCode(document.getElementById('code').value);
-    if (code && !ASSIGN.isCode(code)) { err.textContent = '분반 코드는 5자리예요(영문 대문자와 숫자). 다시 확인해 주세요. 코드가 없으면 비워 두세요.'; err.hidden = false; busy = false; go.disabled = false; document.getElementById('code').focus(); return; }
-    var target = ASSIGN.pick(id, code);
+    var target = ASSIGN.pick(id);
     plan = planFor(target);
     draw(null);
     chacha.style.left = (plan.x0 / W * 100) + '%';
@@ -264,9 +259,7 @@
   }
 
   go.addEventListener('click', roll);
-  sid.addEventListener('keydown', function (e) { if (e.key === 'Enter') roll(); });
-  document.getElementById('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') roll(); });
-})();
+  sid.addEventListener('keydown', function (e) { if (e.key === 'Enter') roll(); });})();
 </script>
 </body>
 </html>
