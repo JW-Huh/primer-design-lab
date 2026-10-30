@@ -43,7 +43,7 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
 <div class="wrap">
   <div class="topbar">
     <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
-    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html" aria-current="page">엑손 찾기</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html">PCR 시뮬레이션</a><a href="revcomp.html">역상보</a></nav>
+    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html" aria-current="page">엑손 찾기</a><a href="revcomp.html">역상보</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="check.html">프라이머 점검</a><a href="pcr.html">PCR 시뮬레이션</a><a href="score.html">채점·제출</a></nav>
   </div>
 
   <h1>엑손 찾기</h1>
@@ -70,6 +70,10 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
     <table class="t" id="tbl"></table>
     <div class="row" style="margin-top:8px"><button class="btn small" id="copyJ" type="button">mRNA 엑손 경계 복사</button><span class="hint" id="jtxt" style="margin:0"></span></div>
 
+    <h2 style="margin-top:22px">경계 주변 서열</h2>
+    <div style="overflow-x:auto"><table class="t" id="jctx"></table></div>
+    <p class="hint">mRNA 윗가닥(5′→3′) 서열입니다. | 가 엑손 경계입니다. 경계에 걸치는 Forward는 이 서열을 그대로, Reverse는 역상보로 바꿔 씁니다.</p>
+
     <div id="pr"></div>
 
     <h2 style="margin-top:22px">mRNA 위의 엑손</h2>
@@ -93,42 +97,13 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var K = 16, WIDTH = 60, state = null;
+  var WIDTH = 60, state = null;
   function fail(msg) { $('err').innerHTML = msg; $('err').hidden = false; $('out').hidden = true; }
   function note(cls, html) { var d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html; $('notes').appendChild(d); }
   function box(k, v, s) { return '<div class="box"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (s ? '<div class="s">' + s + '</div>' : '') + '</div>'; }
   function n(x) { return x.toLocaleString(); }
 
-  // gDNA의 모든 K-mer 위치표
-  function index(G) { var m = {}; for (var i = 0; i + K <= G.length; i++) { var w = G.substr(i, K); (m[w] || (m[w] = [])).push(i); } return m; }
-
-  // mRNA를 왼쪽부터 훑으며 gDNA에서 같은 순서로 나오는 조각(엑손)을 찾는다
-  function align(M, G) {
-    var idx = index(G), blocks = [], gPrev = -1, mPrev = -1, i = 0;
-    while (i + K <= M.length) {
-      var cands = idx[M.substr(i, K)], g = -1;
-      if (cands) for (var c = 0; c < cands.length; c++) if (cands[c] > gPrev) { g = cands[c]; break; }
-      if (g < 0) { i++; continue; }
-      var s = i, gs = g;
-      while (s - 1 > mPrev && gs - 1 > gPrev && M[s - 1] === G[gs - 1]) { s--; gs--; }
-      var len = K + (i - s);
-      while (s + len < M.length && gs + len < G.length && M[s + len] === G[gs + len]) len++;
-      blocks.push({ ms: s, me: s + len - 1, gs: gs, ge: gs + len - 1 });
-      mPrev = s + len - 1; gPrev = gs + len - 1; i = s + len;
-    }
-    // 같은 대각선에서 염기 몇 개 차이로 끊긴 조각은 하나로 합친다
-    var ex = [];
-    blocks.forEach(function (b) {
-      var p = ex[ex.length - 1];
-      if (p && (b.gs - b.ms) === (p.gs - p.ms) && b.ms - p.me - 1 <= 12) { p.me = b.me; p.ge = b.ge; }
-      else ex.push({ ms: b.ms, me: b.me, gs: b.gs, ge: b.ge });
-    });
-    ex = ex.filter(function (b) { return b.me - b.ms + 1 >= 18; });
-    var covered = ex.reduce(function (a, b) { return a + (b.me - b.ms + 1); }, 0);
-    return { exons: ex, cover: M.length ? covered / M.length : 0 };
-  }
-
-  function exonOf(ex, pos) { for (var i = 0; i < ex.length; i++) if (pos >= ex[i].ms && pos <= ex[i].me) return i; return -1; }
+  var exonOf = DNA.exonOf;
 
   function run() {
     $('notes').innerHTML = '';
@@ -141,8 +116,8 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
     if (r) { e = DNA.check(r); if (e) return fail('Reverse: ' + e); }
     $('err').hidden = true;
 
-    var A = align(M, G), flipped = false;
-    if (A.cover < 0.5) { var B = align(M, DNA.rc(G)); if (B.cover > A.cover) { A = B; G = DNA.rc(G); flipped = true; } }
+    var A = DNA.exonAlign(M, G), flipped = A.flipped;
+    G = A.G;
     if (flipped) note('info', 'gDNA가 반대 방향이어서 역상보로 뒤집어 맞췄어요. 아래 gDNA 위치는 뒤집은 서열 기준입니다.');
     var ex = A.exons;
     if (!ex.length) return fail('mRNA와 gDNA에서 같은 조각을 찾지 못했어요. 같은 유전자의 서열인지 확인하세요.');
@@ -173,6 +148,12 @@ table.t td.m { font-family: var(--font-mono); font-size: 13.5px; white-space: no
     $('tbl').innerHTML = t;
     var jx = ex.slice(0, -1).map(function (b) { return b.me + 1; });
     $('jtxt').textContent = jx.length ? '경계(앞 엑손의 마지막 염기): ' + jx.join(', ') : '엑손이 하나뿐이에요';
+    var jc = '<tr><th>경계</th><th>mRNA 위치</th><th>앞 엑손 끝 25 nt | 뒤 엑손 시작 25 nt</th></tr>';
+    ex.slice(0, -1).forEach(function (b, k) {
+      var p = b.me + 1, L = M.substring(Math.max(0, p - 25), p), Rr = M.substring(p, p + 25);
+      jc += '<tr><td>엑손 ' + (k + 1) + ' | ' + (k + 2) + '</td><td class="m">' + n(p) + ' | ' + n(p + 1) + '</td><td class="m"><span class="' + (k % 2 ? 'e2' : 'e1') + '">' + L + '</span><b style="color:var(--red)">|</b><span class="' + (k % 2 ? 'e1' : 'e2') + '">' + Rr + '</span><br><span class="hint">' + n(Math.max(1, p - 24)) + '–' + n(p) + ' | ' + n(p + 1) + '–' + n(Math.min(M.length, p + 25)) + '</span></td></tr>';
+    });
+    $('jctx').innerHTML = ex.length > 1 ? jc : '<tr><td>엑손이 하나뿐이라 경계가 없습니다.</td></tr>';
     $('copyJ').onclick = function () { var b = this; try { navigator.clipboard.writeText(jx.join(', ')).then(function () { b.textContent = '복사됨'; }); } catch (x) {} };
 
     // 프라이머

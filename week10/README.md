@@ -5,7 +5,7 @@
 | 순서 | 내용 | 시간 |
 |---|---|---|
 | Part 1 | 이론: 프라이머, 역상보, Tm, 2차 구조 (PCR·qPCR은 짧게 복습) | 30–40분 |
-| Part 2 | 실습: 핀볼 → mRNA·gDNA → BLAST로 맞대기 → Primer-BLAST → 점검 → Tm → 서열 뷰어 → PCR 시뮬레이션 | 50–60분 |
+| Part 2 | 실습: 핀볼 → mRNA·gDNA 맞대기 → 프라이머 직접 설계(역상보, Tm) → 점검 → PCR 시뮬레이션 → 채점·제출 → Primer-BLAST와 비교 | 70–80분 |
 
 **준비물**: 노트북, 인터넷. 가입하거나 설치할 것은 없습니다.
 **제출물**: [기록지](worksheet.md)의 필수 항목을 갖춘 보고서를 사이버캠퍼스에 제출
@@ -144,9 +144,9 @@ NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mR
 
 | 걱정거리 | 왜 문제인가 | 설계에서 하는 일 |
 |---|---|---|
-| **유전체 DNA(gDNA) 오염** | RNA를 뽑을 때 gDNA가 조금 섞입니다. 프라이머가 gDNA에도 붙으면 발현량이 아닌데도 신호가 나옵니다 | 한 프라이머가 **엑손 경계에 걸치게** 합니다. 오늘은 Primer-BLAST의 **Exon junction span**으로 이렇게 설계합니다 |
+| **유전체 DNA(gDNA) 오염** | RNA를 뽑을 때 gDNA가 조금 섞입니다. 프라이머가 gDNA에도 붙으면 발현량이 아닌데도 신호가 나옵니다 | 한 프라이머가 **엑손 경계에 걸치게** 합니다. 오늘은 이렇게 직접 설계합니다 |
 | 프라이머 이합체 | SYBR은 이합체에도 빛납니다 | 3′ 끝이 서로 붙지 않는 쌍. NTC(주형 없는 대조군)로 확인 |
-| 산물이 두 개 이상 | Tm 곡선에 봉우리가 둘 | Primer-BLAST에서 다른 유전자 산물이 없는지 확인. Tm 곡선 봉우리 하나 |
+| 산물이 두 개 이상 | Tm 곡선에 봉우리가 둘 | 비슷한 서열을 가진 다른 유전자(예: HBB와 HBD)나 반복 서열(Alu)을 피함. Tm 곡선 봉우리 하나 |
 | transcript variant | 유전자 하나에 mRNA가 여러 종류일 수 있음 | 모든 variant에 공통인 구간에 설계 (오늘은 안 함) |
 | 효율 | 사이클마다 정확히 2배가 아니면 Ct로 양을 비교할 수 없음 | 실제 실험에서 희석 계열로 효율 90–110%인지 확인 (오늘은 안 함) |
 
@@ -159,6 +159,16 @@ NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mR
 | 한 프라이머가 엑손 경계에 걸침 | 산물 | **산물 없음**. 경계 양쪽 서열 사이에 인트론이 끼어 있어 프라이머가 연속으로 붙을 자리가 없음 |
 
 경계에 걸친 프라이머는 gDNA에서 반쪽만 맞습니다. 특히 3′ 끝이 짝을 못 이루면 중합효소가 연장하지 못합니다.
+
+### 1-11. PCR 프로그램 정하기
+
+| 단계 | 보통 값 | 바꾸면 |
+|---|---|---|
+| 초기 변성 | 95 °C 2분 | hot-start 효소가 깨어나고 유전체 DNA가 풀린다. 너무 짧으면 첫 사이클이 약하다 |
+| 변성 | 95 °C 15초 | 산물 Tm보다 충분히 높아야 두 가닥이 떨어진다 |
+| 결합 | 60 °C, 30–60초 | 낮추면 비슷한 다른 자리에도 붙고, 높이면 제자리에도 덜 붙는다. 너무 짧으면 프라이머가 다 붙기 전에 끝난다 |
+| 연장 | 72 °C, 1 kb당 30–60초 | qPCR(2단계)은 결합과 합쳐 60 °C에서 한다. 짧으면 긴 산물이 끝까지 복제되지 않는다 |
+| 사이클 | 40 | 산물은 사이클마다 늘다가 효소·프라이머가 모자라면 멈춘다(평탄기). 사이클을 늘리면 늦게 생기는 비특이 산물과 이합체도 함께 커진다 |
 
 ### 확인 문제
 
@@ -203,79 +213,79 @@ NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mR
 4. Range는 점수 순으로 나오므로 **Query 시작 번호 순으로** 다시 늘어놓습니다.
    - Range 개수와 mRNA 레코드의 exon 줄 수가 같은가?
    - 이웃한 두 Range의 Sbjct 끝과 시작 사이가 인트론입니다. 인트론 길이를 구합니다.
-5. Range의 경계가 FEATURES의 exon 값과 1–6 nt 어긋나거나 이웃 Range와 겹칠 수 있습니다. 경계 바로 옆 염기가 양쪽 어디에나 맞을 수 있기 때문입니다. 정확한 경계는 FEATURES의 값을 씁니다.
-6. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)에 같은 두 FASTA를 넣으면 같은 결과를 엑손 지도와 표로 볼 수 있습니다.
+5. Range 끝은 몇 nt 어긋나거나 겹칠 수 있습니다. 경계는 Step 2 mRNA 레코드의 exon 값을 따릅니다.
+6. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)에 같은 두 FASTA를 넣으면 같은 결과를 엑손 지도와 표로 볼 수 있고, 경계마다 앞뒤 서열이 나옵니다. 이 표로 프라이머를 짭니다.
 
-### Step 4. Primer-BLAST로 qPCR 프라이머 만들기
+### Step 4. Forward 프라이머 짜기 (엑손 경계에 걸치게)
 
-1. 새 탭에서 [Primer-BLAST](https://www.ncbi.nlm.nih.gov/tools/primer-blast/)를 엽니다.
-2. 맨 위 **PCR Template** 칸에 내 RefSeq 번호를 붙여 넣습니다.
-3. **Primer Parameters**에서 **PCR product size**를 Min `70`, Max `150`으로 바꿉니다.
-4. **Exon/intron selection**의 **Exon junction span**을 `Primer must span an exon-exon junction`으로 바꿉니다. 아래 **Exon junction match** 값(7 / 4 / 8)은 그대로 둡니다. 경계의 5′ 쪽에 7 nt 이상, 3′ 쪽에 4–8 nt가 걸치게 하라는 뜻입니다.
-5. 나머지는 기본값 그대로입니다. 아래 값만 확인합니다.
+1. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)의 **경계 주변 서열** 표에서 경계 하나를 고릅니다.
+2. 경계를 가운데 두고 18–24 nt를 고릅니다. 경계 앞(5′ 쪽)에 7 nt 이상, 경계 뒤(3′ 쪽)에 4–8 nt가 오게 합니다. 이 서열이 Forward(5′→3′)입니다.
+   - 3′ 쪽이 경계를 넘어야 하는 이유: gDNA에서는 그 자리에 인트론이 이어져 3′ 끝이 짝을 못 이룹니다.
+3. Forward의 mRNA 시작·끝 위치를 적어 둡니다.
 
-   | 항목 | 기본값 |
+Reverse를 경계에 걸치게 해도 됩니다. 그때는 Forward를 경계 앞쪽 엑손에 두고, 경계 서열을 Step 5처럼 역상보로 바꿉니다. 경계 조건은 Reverse의 3′ 끝 기준으로 같습니다.
+
+### Step 5. Reverse 프라이머 짜기 (역상보)
+
+1. 앰플리콘 크기를 70–150 bp로 정합니다. 앰플리콘 = Reverse 자리의 끝 위치 − Forward 시작 위치 + 1.
+2. 그 끝 위치에서 앞쪽으로 18–24 nt의 **윗가닥** 서열을 고릅니다.
+3. 손으로 역상보를 먼저 쓰고 [역상보](https://jw-huh.github.io/primer-design-lab/revcomp.html)로 확인합니다. 역상보가 Reverse(5′→3′)입니다.
+
+### Step 6. Tm 맞추기
+
+1. **손으로**: Forward의 A+T, G+C 개수를 세어 ① Wallace 식과 ② 기본 GC 식으로 Tm을 계산합니다.
+2. [Tm 계산기](https://jw-huh.github.io/primer-design-lab/tm.html)에 두 프라이머를 넣어 ①, ②, ③ nearest-neighbor 값을 확인합니다.
+3. 목표: ③의 Primer-BLAST 조건 값이 두 프라이머 모두 **58–62 °C**, 차이 **2 °C 이내**. 벗어나면 길이를 1–2 nt씩 바꾸거나 위치를 몇 nt 옮깁니다. Forward는 경계 조건(앞 7 nt 이상, 뒤 4–8 nt)을 지키며 5′ 쪽 길이로 맞춥니다. 바꿀 때마다 무엇을 왜 바꿨는지 적습니다.
+4. [서열 뷰어](https://jw-huh.github.io/primer-design-lab/viewer.html)에 mRNA, CDS, 두 프라이머를 넣고 붙는 가닥과 앰플리콘 크기를 확인합니다.
+
+### Step 7. 프라이머 점검
+
+1. [프라이머 점검](https://jw-huh.github.io/primer-design-lab/check.html)에 두 프라이머를 넣습니다.
+2. 주의(!)·나쁨(✕) 항목 중 특히 **3′ 끝 이합체**를 봅니다. ✕가 있으면 Step 4–6으로 돌아가 위치를 옮깁니다.
+
+### Step 8. PCR 시뮬레이션
+
+1. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)에 ① mRNA FASTA, ② gDNA FASTA, 내 Forward·Reverse를 넣고 기본 프로그램(95 °C 2분 → 95 °C 15초 / 60 °C 60초 × 40)으로 **PCR 돌리기**를 누릅니다.
+2. 결과를 읽습니다.
+   - **프라이머가 붙는 자리**: 내 mRNA의 어디에 붙는가? 다른 전사체에도 붙는 자리가 있는가?
+   - **레인별 결과**: cDNA·gDNA·NTC 레인의 Ct와 밴드, 밴드가 어디서 나왔는지
+   - **가상 젤, 증폭 곡선, Tm 곡선**: 봉우리가 하나인가?
+3. 프로그램을 하나씩 바꿔 돌립니다. 결과가 어떻게 바뀌고 왜 그런가?
+   - 결합 온도 50 °C, 66 °C, 70 °C
+   - 결합 시간 5초, 1초
+   - 사이클 30, 45
+   - 2단계 PCR을 끄고 연장 72 °C 30초, 3분
+   - "RNA에 유전체 DNA가 조금 섞임" 끄기
+4. 같은 조건으로 두 번 돌려 봅니다. 결과가 조금씩 다른 이유는 시료를 나눠 담을 때의 차이와 이합체가 생기는 우연입니다.
+5. Reverse 칸에 **역상보로 바꾸기 전 서열**을 넣고 돌립니다. 왜 산물이 생기지 않는가?
+6. **HBB 예시 넣기**를 누르고 돌립니다. 두 프라이머가 서로 다른 엑손에 있어 gDNA 산물이 따로 나오고, HBB와 거의 같은 HBD에서도 같은 크기 산물이 섞입니다.
+7. 내 설계에 문제가 보이면 Step 4로 돌아가 고칩니다.
+
+### Step 9. 채점·제출
+
+1. [채점·제출](https://jw-huh.github.io/primer-design-lab/score.html)에 mRNA, gDNA, 내 Forward·Reverse를 넣고 **채점하기**를 누릅니다. 감점 항목을 보고 고칠 수 있으면 돌아가서 고칩니다.
+2. **이 쌍으로 제출하기**를 누르면 그 쌍으로 확정되고 바꿀 수 없습니다. 제출 기록을 보고서에 그대로 옮깁니다.
+
+### Step 10. Primer-BLAST와 비교
+
+1. 제출하면 Primer-BLAST 링크와 설정이 나옵니다. PCR Template에 내 RefSeq 번호, PCR product size 70–150, Exon junction span은 `Primer must span an exon-exon junction`. 나머지는 기본값입니다.
+2. **Get Primers**를 누릅니다. 1–3분 걸립니다. "Your PCR template is highly similar to..." 화면이 나오면 목록이 내 유전자의 다른 버전(같은 유전자 이름의 `XM_` 등)인지 보고, 그렇다면 모두 체크하고 **Submit**을 누릅니다.
+3. **Primer pair 1** 표를 읽습니다.
+
+   | 열 이름 | 뜻 |
    |---|---|
-   | Primer melting temperatures (Tm) | Min 57 · Opt 60 · Max 63 · Max Tm difference 3 |
-   | Database | Refseq mRNA |
-   | Organism | Homo sapiens |
+   | Sequence (5′→3′) | 프라이머 서열. Reverse도 이미 5′→3′라서 다시 뒤집지 않는다 |
+   | Template strand | Forward는 Plus, Reverse는 Minus |
+   | Start · Stop | 주형에서의 위치. Reverse는 Start가 Stop보다 크다 |
+   | Tm · GC% | Tm과 GC 비율 |
+   | Self 3′ complementarity | 3′ 끝끼리 붙는 정도. 작을수록 좋다 |
+   | Product length | 앰플리콘 길이 (bp) |
+   | Exon junction | 경계에 걸친 프라이머. `365/366 (forward primer)`는 Forward가 365번과 366번 사이 경계에 걸쳐 있다는 뜻 |
 
-6. 맨 아래 **Get Primers**를 누릅니다. 1–3분 걸립니다.
-7. 결과 대신 "Your PCR template is highly similar to the following sequence(s)" 화면이 나오면, 목록이 내 유전자의 다른 버전(같은 유전자 이름의 `XM_` 등)인지 봅니다. 그렇다면 모두 체크하고 **Submit**을 누릅니다.
+4. 채점 페이지에 Pair 1의 두 서열을 넣고 **두 쌍 비교하기**를 누릅니다. 항목별로 어디서 점수가 갈리는가?
+5. **PCR 시뮬레이션에서 두 쌍 같이 돌리기**를 누릅니다. 두 쌍이 한 젤에 나란히 나옵니다. 기본 프로그램과 결합 온도 하나를 더 바꿔 비교합니다.
+6. 내 쌍과 Primer-BLAST 쌍은 경계·위치·Tm·3′ 끝에서 무엇이 다른가? 어느 쪽이 나은가?
 
-### Step 5. 결과 읽고 한 쌍 고르기
-
-**Primer pair 1** 표를 봅니다.
-
-| 열 이름 | 뜻 |
-|---|---|
-| Sequence (5′→3′) | 프라이머 서열. Reverse도 이미 5′→3′라서 **다시 뒤집지 않는다** |
-| Template strand | Forward는 Plus, Reverse는 Minus |
-| Length · Start · Stop | 길이와 주형에서의 위치. Reverse는 Start가 Stop보다 크다 |
-| Tm · GC% | Tm과 GC 비율 |
-| Self complementarity · Self 3′ complementarity | 자기끼리 붙는 정도. 작을수록 좋다 |
-| Product length | 앰플리콘 길이 (bp) |
-| Exon junction | 경계에 걸친 프라이머. `365/366 (forward primer)`는 Forward가 365번과 366번 사이 경계에 걸쳐 있다는 뜻 |
-
-1. 나온 쌍 중에서 **Self 3′ complementarity가 낮고 Tm이 60 °C에 가깝고 두 Tm 차이가 작은** 쌍을 하나 고릅니다. 유전자에 따라 후보가 한두 쌍뿐일 수 있습니다. 앰플리콘이 CDS 밖(UTR)에 있어도 괜찮습니다. mRNA 전체가 cDNA가 되므로 발현량을 재는 데는 차이가 없습니다.
-2. Exon junction 위치가 Step 3에서 찾은 엑손 경계 중 어디인지 확인합니다.
-3. 표 아래 **Products on intended targets** 외에 다른 유전자가 나왔는지 확인합니다.
-
-### Step 6. 프라이머 점검
-
-1. [프라이머 점검](https://jw-huh.github.io/primer-design-lab/check.html)에 내 Forward와 Reverse를 넣고 **점검하기**를 누릅니다.
-2. 주의(!)·나쁨(✕) 항목 중 특히 **3′ 끝 이합체**를 봅니다.
-3. 나쁨(✕)이 있으면 Step 5로 돌아가 다른 쌍으로 바꿉니다. 두 쌍을 바꿔 봐도 ✕가 남으면 그중 나은 쌍으로 진행합니다 (남은 ✕는 보고서에 이유와 함께 남김).
-
-### Step 7. Tm 직접 계산해 보기
-
-1. **손으로 먼저**: 내 Forward의 A+T 개수, G+C 개수를 세어 ① Wallace 식과 ② 기본 GC 식으로 Tm을 계산합니다.
-2. [Tm 계산기](https://jw-huh.github.io/primer-design-lab/tm.html)에 두 프라이머를 넣어 내 계산과 비교합니다.
-3. 세 계산법의 값을 Primer-BLAST의 Tm과 비교합니다. 어느 값이 가장 가까운가, 왜 그런가?
-
-### Step 8. 서열 뷰어에서 결합 위치 확인
-
-1. [서열 뷰어](https://jw-huh.github.io/primer-design-lab/viewer.html)를 엽니다.
-2. ① mRNA FASTA, ② CDS 시작·끝, ③ Forward, ④ Reverse를 넣고 **표시하기**를 누릅니다.
-3. 확인 결과 상자에서 앰플리콘이 70–150 bp인지, 두 Tm이 57–63 °C 안에서 차이 3 °C 이내인지 봅니다.
-4. 두 가닥 서열에서 직접 확인합니다.
-   - 파란색 Forward는 **윗가닥**에 그대로 보이나요? 실제로는 어느 가닥에 붙나요?
-   - 초록색 Reverse는 **아랫가닥**에 보입니다. 아랫가닥은 오른쪽이 5′이므로 오른쪽에서 왼쪽으로 읽으면 내 Reverse 서열과 같습니다.
-5. 요약 칸의 앰플리콘 크기가 Primer-BLAST의 Product length와 같은지 확인합니다.
-6. **qPCR 조건** 표를 봅니다. 프라이머에 따라 바뀌지 않는 이유는 1-3에 있습니다.
-
-### Step 9. PCR 시뮬레이션으로 돌려 보기
-
-1. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)에 ① mRNA FASTA, ② Forward, ③ Reverse, ⑤ gDNA FASTA를 넣고 결합 온도는 60 °C 그대로 **PCR 돌리기**를 누릅니다.
-2. **가상 젤**을 봅니다.
-   - cDNA 레인에 밴드가 하나인가? 크기가 Step 8의 앰플리콘과 같은가?
-   - gDNA 레인에 밴드가 있는가? 그 이유는 1-10의 표에 있습니다.
-   - NTC 레인이 깨끗한가?
-3. **Tm 곡선**(melt curve)에서 봉우리가 하나인지, 산물의 Tm이 몇 도인지 봅니다.
-4. 결합 온도를 **70 °C**로 바꿔 다시 돌립니다. 밴드가 어떻게 되는가? 이번에는 **50 °C**로. 어떤 경고가 뜨는가?
-5. Reverse 칸에 **역상보로 바꾸기 전 서열**(윗가닥 그대로, Primer-BLAST 결과의 Reverse 위치를 서열 뷰어에서 읽은 것)을 넣고 돌립니다. 왜 산물이 생기지 않는가? (Forward와 Reverse 칸을 서로 바꿔 넣는 것은 괜찮습니다. 시험관 안에는 이름표가 없습니다.)
-6. **HBB 예시 넣기**를 누르고 돌립니다. 이 예시의 두 프라이머는 경계에 걸치지 않고 서로 다른 엑손에 있습니다. gDNA 레인의 밴드가 cDNA 레인과 어떻게 다른가?
-
-### Step 10. 제출
+### Step 11. 보고서 제출
 
 [기록지](worksheet.md)의 필수 항목을 갖춘 보고서를 사이버캠퍼스에 올립니다. 형식은 기록지에 있습니다.

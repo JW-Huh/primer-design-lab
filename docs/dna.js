@@ -200,6 +200,39 @@
     return { ta: ta, annealSec: 30, extSec: ext };
   }
 
+  // ── mRNA–gDNA 맞대기 (엑손 찾기) ─────────────────────────
+  // gDNA의 16-mer 위치표를 만들고, mRNA를 왼쪽부터 훑으며 같은 순서로 나오는 조각을 엑손으로 잡는다
+  function exonAlign1(M, G) {
+    var K = 16, idx = {}, blocks = [], gPrev = -1, mPrev = -1, i = 0;
+    for (var q = 0; q + K <= G.length; q++) { var w = G.substr(q, K); (idx[w] || (idx[w] = [])).push(q); }
+    while (i + K <= M.length) {
+      var cands = idx[M.substr(i, K)], g = -1;
+      if (cands) for (var c = 0; c < cands.length; c++) if (cands[c] > gPrev) { g = cands[c]; break; }
+      if (g < 0) { i++; continue; }
+      var s = i, gs = g;
+      while (s - 1 > mPrev && gs - 1 > gPrev && M[s - 1] === G[gs - 1]) { s--; gs--; }
+      var len = K + (i - s);
+      while (s + len < M.length && gs + len < G.length && M[s + len] === G[gs + len]) len++;
+      blocks.push({ ms: s, me: s + len - 1, gs: gs, ge: gs + len - 1 });
+      mPrev = s + len - 1; gPrev = gs + len - 1; i = s + len;
+    }
+    var ex = [];
+    blocks.forEach(function (b) {
+      var p = ex[ex.length - 1];
+      if (p && (b.gs - b.ms) === (p.gs - p.ms) && b.ms - p.me - 1 <= 12) { p.me = b.me; p.ge = b.ge; }
+      else ex.push({ ms: b.ms, me: b.me, gs: b.gs, ge: b.ge });
+    });
+    ex = ex.filter(function (b) { return b.me - b.ms + 1 >= 18; });
+    var covered = ex.reduce(function (a, b) { return a + (b.me - b.ms + 1); }, 0);
+    return { exons: ex, cover: M.length ? covered / M.length : 0, G: G, flipped: false };
+  }
+  function exonAlign(M, G) {
+    var A = exonAlign1(M, G);
+    if (A.cover < 0.5) { var B = exonAlign1(M, rc(G)); if (B.cover > A.cover) { B.flipped = true; A = B; } }
+    return A;
+  }
+  function exonOf(ex, pos) { for (var i = 0; i < ex.length; i++) if (pos >= ex[i].ms && pos <= ex[i].me) return i; return -1; }
+
   var CODON = {};
   (function () {
     var b = 'TCAG', aa = 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', n = 0;
@@ -212,6 +245,7 @@
     clean: clean, check: check, comp: comp, rev: rev, rc: rc, gcPercent: gcPercent,
     tmWallace: tmWallace, tmBasic: tmBasic, tmNN: tmNN, NN: NN, NN_LABEL: NN_LABEL, TAQ: TAQ, PRIMERBLAST: PRIMERBLAST,
     dimer: dimer, hairpin: hairpin, palindromes: palindromes, qc: qc, dimerPicture: dimerPicture,
-    ENZYMES: ENZYMES, findSites: findSites, taqProgram: taqProgram, CODON: CODON, AA3: AA3, translate: translate
+    ENZYMES: ENZYMES, findSites: findSites, taqProgram: taqProgram, CODON: CODON, AA3: AA3, translate: translate,
+    exonAlign: exonAlign, exonOf: exonOf
   };
 })(window);
