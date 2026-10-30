@@ -37,7 +37,7 @@
 <div class="wrap">
   <div class="topbar">
     <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
-    <nav class="nav"><a href="pinball.html" aria-current="page">유전자 핀볼</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html">PCR 시뮬레이션</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a></nav>
+    <nav class="nav"><a href="pinball.html" aria-current="page">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html">PCR 시뮬레이션</a><a href="revcomp.html">역상보</a></nav>
   </div>
 
   <h1>유전자 핀볼</h1>
@@ -72,14 +72,14 @@
 <script>
 (function () {
   var GENES = [
-    { sym: 'HBB',   ko: '베타 글로빈',              acc: 'NM_000518.5', len: 628,  cds: '51–494',  note: '적혈구에서 산소를 나르는 헤모글로빈의 한 부분입니다. 겸상적혈구빈혈의 원인 유전자예요.' },
-    { sym: 'IL6',   ko: '인터루킨-6',               acc: 'NM_000600.5', len: 1127, cds: '64–702',  note: '염증이 생기면 분비되는 대표적인 사이토카인입니다.' },
-    { sym: 'TNF',   ko: '종양괴사인자',             acc: 'NM_000594.4', len: 1678, cds: '178–879', note: '염증과 면역 반응을 이끄는 신호 단백질입니다. 기호는 TNFA가 아니라 TNF예요.' },
-    { sym: 'IL10',  ko: '인터루킨-10',              acc: 'NM_000572.3', len: 1630, cds: '60–596',  note: '지나친 면역 반응을 가라앉히는 사이토카인입니다.' },
-    { sym: 'IFNG',  ko: '인터페론 감마',            acc: 'NM_000619.3', len: 1211, cds: '126–626', note: '바이러스에 감염된 세포를 공격하는 면역세포가 분비합니다.' },
-    { sym: 'SOD1',  ko: '초과산화물 불균등화효소 1', acc: 'NM_000454.5', len: 895,  cds: '78–542',  note: '세포 안의 활성산소를 없애는 효소입니다. 루게릭병(ALS)과 관련 있어요.' },
-    { sym: 'APOE',  ko: '아포지단백 E',             acc: 'NM_000041.4', len: 1166, cds: '70–1023', note: '혈액에서 콜레스테롤을 운반합니다. 알츠하이머병 위험도와 관련 있어요.' },
-    { sym: 'HMOX1', ko: '헴 산소화효소 1',          acc: 'NM_002133.3', len: 1554, cds: '79–945',  note: '헴을 분해하는 효소로, 세포가 스트레스를 받으면 많아집니다.' }
+    { sym: 'HBB',   ko: '베타 글로빈',              acc: 'NM_000518.5', len: 628,  cds: '51–494',  g: ['NC_000011.10', 5225464, 5227071, 1], note: '적혈구에서 산소를 나르는 헤모글로빈의 한 부분입니다. 겸상적혈구빈혈의 원인 유전자예요.' },
+    { sym: 'IL6',   ko: '인터루킨-6',               acc: 'NM_000600.5', len: 1127, cds: '64–702',  g: ['NC_000007.14', 22727200, 22731998, 0], note: '염증이 생기면 분비되는 대표적인 사이토카인입니다.' },
+    { sym: 'TNF',   ko: '종양괴사인자',             acc: 'NM_000594.4', len: 1678, cds: '178–879', g: ['NC_000006.12', 31575565, 31578336, 0], note: '염증과 면역 반응을 이끄는 신호 단백질입니다. 기호는 TNFA가 아니라 TNF예요.' },
+    { sym: 'IL10',  ko: '인터루킨-10',              acc: 'NM_000572.3', len: 1630, cds: '60–596',  g: ['NC_000001.11', 206767602, 206772494, 1], note: '지나친 면역 반응을 가라앉히는 사이토카인입니다.' },
+    { sym: 'IFNG',  ko: '인터페론 감마',            acc: 'NM_000619.3', len: 1211, cds: '126–626', g: ['NC_000012.12', 68154768, 68159740, 1], note: '바이러스에 감염된 세포를 공격하는 면역세포가 분비합니다.' },
+    { sym: 'SOD1',  ko: '초과산화물 불균등화효소 1', acc: 'NM_000454.5', len: 895,  cds: '78–542',  g: ['NC_000021.9', 31659693, 31668931, 0], note: '세포 안의 활성산소를 없애는 효소입니다. 루게릭병(ALS)과 관련 있어요.' },
+    { sym: 'APOE',  ko: '아포지단백 E',             acc: 'NM_000041.4', len: 1166, cds: '70–1023', g: ['NC_000019.10', 44905796, 44909393, 0], note: '혈액에서 콜레스테롤을 운반합니다. 알츠하이머병 위험도와 관련 있어요.' },
+    { sym: 'HMOX1', ko: '헴 산소화효소 1',          acc: 'NM_002133.3', len: 1554, cds: '79–945',  g: ['NC_000022.11', 35381096, 35394207, 0], note: '헴을 분해하는 효소로, 세포가 스트레스를 받으면 많아집니다.' }
   ];
   var N = GENES.length;
   var W = 360, H = 600, R = 7, PR = 5, SLOT_TOP = 500, FLOOR = 590 - R;
@@ -191,16 +191,19 @@
   function say(text) { bubble.textContent = text; bubble.classList.add('show'); }
 
   function showResult(g) {
+    var gd = g.g, gName = gd[0] + ':' + (gd[3] ? 'c' + gd[2] + '-' + gd[1] : gd[1] + '-' + gd[2]);
+    var gUrl = 'https://www.ncbi.nlm.nih.gov/nuccore/' + gd[0] + '?report=fasta&from=' + gd[1] + '&to=' + gd[2] + (gd[3] ? '&strand=true' : '');
     resultBox.innerHTML =
       '<div class="card">' +
         '<div class="sym">' + g.sym + '</div>' +
         '<div class="ko">' + g.ko + '</div>' +
-        '<dl><dt>RefSeq 번호</dt><dd>' + g.acc + '</dd>' +
-        '<dt>서열 길이</dt><dd>' + g.len.toLocaleString() + ' bp</dd>' +
-        '<dt>CDS 위치</dt><dd>' + g.cds + '</dd></dl>' +
+        '<dl><dt>mRNA (RefSeq)</dt><dd>' + g.acc + ' · ' + g.len.toLocaleString() + ' bp</dd>' +
+        '<dt>CDS 위치</dt><dd>' + g.cds + '</dd>' +
+        '<dt>gDNA (유전자 구간)</dt><dd>' + gName + ' · ' + (gd[2] - gd[1] + 1).toLocaleString() + ' bp</dd></dl>' +
         '<p>' + g.note + '</p>' +
         '<div class="row">' +
-          '<a class="btn" href="https://www.ncbi.nlm.nih.gov/nuccore/' + g.acc + '" target="_blank" rel="noopener">NCBI에서 서열 보기</a>' +
+          '<a class="btn" href="https://www.ncbi.nlm.nih.gov/nuccore/' + g.acc + '" target="_blank" rel="noopener">mRNA 보기</a>' +
+          '<a class="btn" href="' + gUrl + '" target="_blank" rel="noopener">gDNA 보기 (FASTA)</a>' +
           '<button class="btn ghost" type="button" id="copyAcc">번호 복사</button>' +
         '</div>' +
         '<p class="hint" style="margin-top:12px">RefSeq 번호는 점 뒤 버전까지입니다. 버튼 없이 직접 찾아가는 방법은 <a href="https://github.com/JW-Huh/primer-design-lab/blob/main/week10/ncbi-guide.md" target="_blank" rel="noopener">NCBI 찾아가기 안내</a>에 있어요.</p>' +

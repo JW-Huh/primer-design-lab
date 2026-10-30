@@ -38,7 +38,7 @@ svg text { font-family: var(--font-mono); }
 <div class="wrap">
   <div class="topbar">
     <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
-    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html" aria-current="page">PCR 시뮬레이션</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a></nav>
+    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="check.html">프라이머 점검</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="pcr.html" aria-current="page">PCR 시뮬레이션</a><a href="revcomp.html">역상보</a></nav>
   </div>
 
   <h1>PCR 시뮬레이션</h1>
@@ -55,10 +55,8 @@ svg text { font-family: var(--font-mono); }
         <div class="ta"><input type="text" id="ta" inputmode="decimal" value="60"> °C <span class="hint" style="margin:0">(2단계 qPCR 기본 60)</span></div>
       </div>
     </div>
-    <details class="opt" id="gopt">
-      <summary>심화 · gDNA 서열도 넣기 (유전체 DNA가 섞였을 때 어떤 밴드가 나오는지 보기. gDNA에는 엑손(exon) 사이에 인트론(intron)이 있어 산물 크기가 달라질 수 있음)</summary>
-      <textarea id="g" spellcheck="false" style="min-height:90px; margin-top:8px" placeholder="같은 유전자의 유전체(genomic) 서열 FASTA. 구하는 방법은 엑손 찾기 페이지 아래 안내를 보세요."></textarea>
-    </details>
+    <label class="field" for="g" style="margin-top:12px">⑤ gDNA 서열 (유전자 구간 FASTA)</label>
+    <textarea id="g" spellcheck="false" style="min-height:90px" placeholder="핀볼 결과의 'gDNA 보기 (FASTA)'에서 복사한 서열. 넣으면 유전체 DNA가 섞인 시료에서 나올 밴드(gDNA 레인)도 그립니다."></textarea>
     <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">PCR 돌리기</button><button class="btn ghost" id="ex" type="button">HBB 예시 넣기</button></div>
     <div id="err" class="msg err" hidden></div>
   </section>
@@ -282,7 +280,7 @@ svg text { font-family: var(--font-mono); }
   $('go').addEventListener('click', run);
   $('ex').addEventListener('click', function () {
     if (!window.EXAMPLE_HBB) return;
-    $('c').value = EXAMPLE_HBB.mrna; $('g').value = EXAMPLE_HBB.gdna; $('gopt').open = true;
+    $('c').value = EXAMPLE_HBB.mrna; $('g').value = EXAMPLE_HBB.gdna;
     $('f').value = EXAMPLE_HBB.f; $('r').value = EXAMPLE_HBB.r; $('ta').value = '60';
     run();
   });

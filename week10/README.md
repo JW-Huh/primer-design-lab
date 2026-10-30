@@ -5,8 +5,7 @@
 | 순서 | 내용 | 시간 |
 |---|---|---|
 | Part 1 | 이론: 프라이머, 역상보, Tm, 2차 구조 (PCR·qPCR은 짧게 복습) | 30–40분 |
-| Part 2 | 실습: 핀볼 → NCBI → Primer-BLAST → 점검 → Tm → 서열 뷰어 → PCR 시뮬레이션 | 40분 내외 |
-| 심화 (수업 후 각자) | gDNA 오염을 구분할 수 있는 설계인지 확인 | – |
+| Part 2 | 실습: 핀볼 → mRNA·gDNA → BLAST로 맞대기 → Primer-BLAST → 점검 → Tm → 서열 뷰어 → PCR 시뮬레이션 | 50–60분 |
 
 **준비물**: 노트북, 인터넷. 가입하거나 설치할 것은 없습니다.
 **제출물**: [기록지](worksheet.md)의 필수 항목을 갖춘 보고서를 사이버캠퍼스에 제출
@@ -133,9 +132,11 @@ DNA 중합효소의 규칙은 두 가지입니다.
 - 3′ 끝끼리 붙으면 중합효소가 그 자리에서 연장해 버려 짧은 **primer-dimer**가 생깁니다. qPCR에서는 SYBR이 여기에도 빛나서 Ct와 Tm 곡선을 망칩니다.
 - **제한효소 자리**: GAATTC(EcoRI)처럼 대부분의 인식 서열은 역상보가 자기 자신과 같은 **회문(palindrome)** 입니다. 프라이머 안에 있으면 같은 프라이머끼리 그 6 bp가 그대로 짝을 이룹니다. 6 bp 하나로 실패하는 경우는 드물지만, 피할 수 있으면 피합니다.
 
-### 1-9. 오늘 쓰는 서열: RefSeq mRNA
+### 1-9. 오늘 쓰는 서열: mRNA와 gDNA
 
-NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mRNA 서열**입니다. qPCR은 mRNA를 역전사한 cDNA를 주형으로 쓰므로 이 서열로 설계합니다. RefSeq 번호와 CDS의 뜻, 버튼 없이 직접 찾아가는 방법은 [NCBI 찾아가기 안내](ncbi-guide.md)에 정리해 두었습니다.
+NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mRNA 서열**입니다. 스플라이싱이 끝난 서열이라 엑손(exon)만 이어져 있습니다. qPCR은 mRNA를 역전사한 cDNA를 주형으로 쓰므로 이 서열로 설계합니다.
+
+`NC_`로 시작하는 번호는 염색체 서열이고, 오늘은 그중 **유전자 구간(gDNA)** 만 씁니다. 엑손 사이에 인트론(intron)이 그대로 있어서 mRNA보다 깁니다. 두 서열을 맞대어 보면 엑손이 어디서 끊기는지 알 수 있습니다. RefSeq 번호와 CDS의 뜻, 버튼 없이 직접 찾아가는 방법은 [NCBI 찾아가기 안내](ncbi-guide.md)에 있습니다.
 
 오늘 만드는 것은 cDNA를 대상으로 한 **프라이머 후보**입니다. 실제 실험에 쓰기 전에는 세포에서 뽑은 시료로 돌려 보고, 유전체 DNA가 섞여 증폭되지 않는지와 반응 효율을 확인하는 단계가 더 필요합니다.
 
@@ -143,13 +144,21 @@ NCBI에서 `NM_`으로 시작하는 번호는 사람 유전자의 **검증된 mR
 
 | 걱정거리 | 왜 문제인가 | 설계에서 하는 일 |
 |---|---|---|
-| **유전체 DNA(gDNA) 오염** | RNA를 뽑을 때 gDNA가 조금 섞입니다. 프라이머가 gDNA에도 붙으면 발현량이 아닌데도 신호가 나옵니다 | 두 프라이머 사이에 **인트론(intron)**이 들어가게 하거나(gDNA 산물이 더 길거나 안 나옴), 한 프라이머가 **엑손(exon) 경계에 걸치게** 합니다(gDNA에는 그 서열이 없음). Primer-BLAST의 Exon junction span / Intron inclusion 옵션이 이 일을 합니다 |
+| **유전체 DNA(gDNA) 오염** | RNA를 뽑을 때 gDNA가 조금 섞입니다. 프라이머가 gDNA에도 붙으면 발현량이 아닌데도 신호가 나옵니다 | 한 프라이머가 **엑손 경계에 걸치게** 합니다. 오늘은 Primer-BLAST의 **Exon junction span**으로 이렇게 설계합니다 |
 | 프라이머 이합체 | SYBR은 이합체에도 빛납니다 | 3′ 끝이 서로 붙지 않는 쌍. NTC(주형 없는 대조군)로 확인 |
 | 산물이 두 개 이상 | Tm 곡선에 봉우리가 둘 | Primer-BLAST에서 다른 유전자 산물이 없는지 확인. Tm 곡선 봉우리 하나 |
-| transcript variant | 유전자 하나에 mRNA가 여러 종류일 수 있음 | 모든 variant에 공통인 구간에 설계 (심화) |
+| transcript variant | 유전자 하나에 mRNA가 여러 종류일 수 있음 | 모든 variant에 공통인 구간에 설계 (오늘은 안 함) |
 | 효율 | 사이클마다 정확히 2배가 아니면 Ct로 양을 비교할 수 없음 | 실제 실험에서 희석 계열로 효율 90–110%인지 확인 (오늘은 안 함) |
 
-mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 사이에 **인트론**이 끼어 있습니다. 그래서 같은 프라이머라도 gDNA에서는 산물이 인트론만큼 길어지거나(젤에서 구분됨), 인트론이 아주 길면 아예 안 나옵니다. 심화 활동에서 직접 확인합니다.
+프라이머 위치에 따라 gDNA에서 일어나는 일이 다릅니다.
+
+| 프라이머 위치 | cDNA | gDNA |
+|---|---|---|
+| 두 프라이머가 같은 엑손 안 | 산물 | **같은 크기 산물**. 섞이면 구분할 수 없음 |
+| 사이에 인트론 | 산물 | 인트론만큼 긴 산물 (젤에서 구분). 인트론이 아주 길면 안 나옴 |
+| 한 프라이머가 엑손 경계에 걸침 | 산물 | **산물 없음**. 경계 양쪽 서열 사이에 인트론이 끼어 있어 프라이머가 연속으로 붙을 자리가 없음 |
+
+경계에 걸친 프라이머는 gDNA에서 반쪽만 맞습니다. 특히 3′ 끝이 짝을 못 이루면 중합효소가 연장하지 못합니다.
 
 ### 확인 문제
 
@@ -175,22 +184,35 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
 ### Step 1. 유전자 받기
 
 1. [유전자 핀볼](https://jw-huh.github.io/primer-design-lab/pinball.html)을 엽니다.
-2. **학번 9자리**를 넣고 **공 굴리기**를 누릅니다. 같은 학번은 몇 번을 해도 같은 유전자가 나옵니다. RefSeq 번호는 점 뒤 버전까지(`NM_000518.5`)가 번호입니다.
+2. **학번 9자리**를 넣고 **공 굴리기**를 누릅니다. 같은 학번은 몇 번을 해도 같은 유전자가 나옵니다.
+3. 결과에 mRNA(RefSeq) 번호와 gDNA(유전자 구간) 번호가 함께 나옵니다. RefSeq 번호는 점 뒤 버전까지(`NM_000518.5`)가 번호입니다.
 
-### Step 2. NCBI에서 서열 확인하기
+### Step 2. mRNA와 gDNA 서열 받기
 
-1. 핀볼 결과의 **NCBI에서 서열 보기**를 누릅니다. (버튼 없이 직접 찾아가는 방법: [NCBI 찾아가기 안내](ncbi-guide.md))
-2. 제목에 **Homo sapiens**, 내 유전자 이름, **mRNA**가 있는지 확인합니다.
-3. 맨 위 LOCUS 줄에서 **서열 길이(bp)** 를 찾습니다.
-4. 아래 **FEATURES**에서 `CDS` 줄의 숫자 범위(예: `51..494`)를 찾습니다. 단백질을 만드는 구간입니다.
-5. 페이지 위쪽 **FASTA**를 눌러 서열만 있는 화면을 엽니다. `>` 줄부터 끝까지 **전부 복사**해 둡니다 (Step 7, 8에서 씀).
+1. **mRNA 보기**를 누릅니다. (버튼 없이 찾아가는 방법: [NCBI 찾아가기 안내](ncbi-guide.md))
+   - 제목에 **Homo sapiens**, 내 유전자 이름, **mRNA**가 있는지 확인합니다.
+   - LOCUS 줄의 **서열 길이**, FEATURES의 `CDS` 범위(예: `51..494`), `exon` 줄들을 찾습니다. exon 줄은 이어 붙은 엑손 사이의 **경계 위치**입니다. 번호가 빈틈없이 이어지는 것을 확인합니다.
+   - 위쪽 **FASTA**를 눌러 `>` 줄부터 끝까지 전부 복사해 둡니다.
+2. **gDNA 보기 (FASTA)**를 누릅니다. 유전자 구간의 유전체 서열이 유전자 읽는 방향으로 열립니다. 전부 복사해 둡니다. mRNA보다 얼마나 긴가?
 
-### Step 3. Primer-BLAST로 qPCR 프라이머 만들기
+### Step 3. mRNA와 gDNA 맞대어 보기 (BLAST)
+
+1. [BLAST · Align two sequences](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastSearch&PROGRAM=blastn&BLAST_SPEC=blast2seq&LINK_LOC=align2seq)를 엽니다.
+2. **Enter Query Sequence**에 mRNA FASTA, **Enter Subject Sequence**에 gDNA FASTA를 붙입니다. 나머지는 그대로 두고 **BLAST**를 누릅니다.
+3. 결과에서 **Alignments** 탭을 엽니다. `Range 1`, `Range 2`, … 하나하나가 엑손 하나입니다. Query가 mRNA 위치, Sbjct가 gDNA 위치입니다.
+4. Range는 점수 순으로 나오므로 **Query 시작 번호 순으로** 다시 늘어놓습니다.
+   - Range 개수와 mRNA 레코드의 exon 줄 수가 같은가?
+   - 이웃한 두 Range의 Sbjct 끝과 시작 사이가 인트론입니다. 인트론 길이를 구합니다.
+5. Range의 경계가 FEATURES의 exon 값과 1–6 nt 어긋나거나 이웃 Range와 겹칠 수 있습니다. 경계 바로 옆 염기가 양쪽 어디에나 맞을 수 있기 때문입니다. 정확한 경계는 FEATURES의 값을 씁니다.
+6. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)에 같은 두 FASTA를 넣으면 같은 결과를 엑손 지도와 표로 볼 수 있습니다.
+
+### Step 4. Primer-BLAST로 qPCR 프라이머 만들기
 
 1. 새 탭에서 [Primer-BLAST](https://www.ncbi.nlm.nih.gov/tools/primer-blast/)를 엽니다.
 2. 맨 위 **PCR Template** 칸에 내 RefSeq 번호를 붙여 넣습니다.
 3. **Primer Parameters**에서 **PCR product size**를 Min `70`, Max `150`으로 바꿉니다.
-4. 나머지는 기본값 그대로입니다. 아래 값만 확인합니다.
+4. **Exon/intron selection**의 **Exon junction span**을 `Primer must span an exon-exon junction`으로 바꿉니다. 아래 **Exon junction match** 값(7 / 4 / 8)은 그대로 둡니다. 경계의 5′ 쪽에 7 nt 이상, 3′ 쪽에 4–8 nt가 걸치게 하라는 뜻입니다.
+5. 나머지는 기본값 그대로입니다. 아래 값만 확인합니다.
 
    | 항목 | 기본값 |
    |---|---|
@@ -198,9 +220,10 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
    | Database | Refseq mRNA |
    | Organism | Homo sapiens |
 
-5. 맨 아래 **Get Primers**를 누릅니다. 1–3분 걸립니다.
+6. 맨 아래 **Get Primers**를 누릅니다. 1–3분 걸립니다.
+7. 결과 대신 "Your PCR template is highly similar to the following sequence(s)" 화면이 나오면, 목록이 내 유전자의 다른 버전(같은 유전자 이름의 `XM_` 등)인지 봅니다. 그렇다면 모두 체크하고 **Submit**을 누릅니다.
 
-### Step 4. 결과 읽고 한 쌍 고르기
+### Step 5. 결과 읽고 한 쌍 고르기
 
 **Primer pair 1** 표를 봅니다.
 
@@ -212,26 +235,28 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
 | Tm · GC% | Tm과 GC 비율 |
 | Self complementarity · Self 3′ complementarity | 자기끼리 붙는 정도. 작을수록 좋다 |
 | Product length | 앰플리콘 길이 (bp) |
+| Exon junction | 경계에 걸친 프라이머. `365/366 (forward primer)`는 Forward가 365번과 366번 사이 경계에 걸쳐 있다는 뜻 |
 
-1. Pair 1부터 5까지 훑어보고, **Self 3′ complementarity가 낮고 Tm이 60 °C에 가깝고 두 Tm 차이가 작은** 쌍을 하나 고릅니다. 앰플리콘이 CDS 밖(UTR)에 있어도 괜찮습니다. mRNA 전체가 cDNA가 되므로 발현량을 재는 데는 차이가 없습니다.
-2. 표 아래 **Products on intended targets** 외에 다른 유전자가 나왔는지 확인합니다.
+1. 나온 쌍 중에서 **Self 3′ complementarity가 낮고 Tm이 60 °C에 가깝고 두 Tm 차이가 작은** 쌍을 하나 고릅니다. 유전자에 따라 후보가 한두 쌍뿐일 수 있습니다. 앰플리콘이 CDS 밖(UTR)에 있어도 괜찮습니다. mRNA 전체가 cDNA가 되므로 발현량을 재는 데는 차이가 없습니다.
+2. Exon junction 위치가 Step 3에서 찾은 엑손 경계 중 어디인지 확인합니다.
+3. 표 아래 **Products on intended targets** 외에 다른 유전자가 나왔는지 확인합니다.
 
-### Step 5. 프라이머 점검
+### Step 6. 프라이머 점검
 
 1. [프라이머 점검](https://jw-huh.github.io/primer-design-lab/check.html)에 내 Forward와 Reverse를 넣고 **점검하기**를 누릅니다.
 2. 주의(!)·나쁨(✕) 항목 중 특히 **3′ 끝 이합체**를 봅니다.
-3. 나쁨(✕)이 있으면 Step 4로 돌아가 다른 쌍으로 바꿉니다. 두 쌍을 바꿔 봐도 ✕가 남으면 그중 나은 쌍으로 진행합니다 (남은 ✕는 보고서에 이유와 함께 남김).
+3. 나쁨(✕)이 있으면 Step 5로 돌아가 다른 쌍으로 바꿉니다. 두 쌍을 바꿔 봐도 ✕가 남으면 그중 나은 쌍으로 진행합니다 (남은 ✕는 보고서에 이유와 함께 남김).
 
-### Step 6. Tm 직접 계산해 보기
+### Step 7. Tm 직접 계산해 보기
 
 1. **손으로 먼저**: 내 Forward의 A+T 개수, G+C 개수를 세어 ① Wallace 식과 ② 기본 GC 식으로 Tm을 계산합니다.
 2. [Tm 계산기](https://jw-huh.github.io/primer-design-lab/tm.html)에 두 프라이머를 넣어 내 계산과 비교합니다.
 3. 세 계산법의 값을 Primer-BLAST의 Tm과 비교합니다. 어느 값이 가장 가까운가, 왜 그런가?
 
-### Step 7. 서열 뷰어에서 결합 위치 확인
+### Step 8. 서열 뷰어에서 결합 위치 확인
 
 1. [서열 뷰어](https://jw-huh.github.io/primer-design-lab/viewer.html)를 엽니다.
-2. ① FASTA, ② CDS 시작·끝, ③ Forward, ④ Reverse를 넣고 **표시하기**를 누릅니다.
+2. ① mRNA FASTA, ② CDS 시작·끝, ③ Forward, ④ Reverse를 넣고 **표시하기**를 누릅니다.
 3. 확인 결과 상자에서 앰플리콘이 70–150 bp인지, 두 Tm이 57–63 °C 안에서 차이 3 °C 이내인지 봅니다.
 4. 두 가닥 서열에서 직접 확인합니다.
    - 파란색 Forward는 **윗가닥**에 그대로 보이나요? 실제로는 어느 가닥에 붙나요?
@@ -239,29 +264,18 @@ mRNA는 유전자의 **엑손**만 이어 붙인 것이고, gDNA에는 엑손 �
 5. 요약 칸의 앰플리콘 크기가 Primer-BLAST의 Product length와 같은지 확인합니다.
 6. **qPCR 조건** 표를 봅니다. 프라이머에 따라 바뀌지 않는 이유는 1-3에 있습니다.
 
-### Step 8. PCR 시뮬레이션으로 돌려 보기
+### Step 9. PCR 시뮬레이션으로 돌려 보기
 
-1. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)에 ① FASTA, ② Forward, ③ Reverse를 넣고 결합 온도는 60 °C 그대로 **PCR 돌리기**를 누릅니다.
-2. **가상 젤**에서 cDNA 레인에 밴드가 하나인지, NTC 레인이 깨끗한지 봅니다. 밴드 크기가 Step 7의 앰플리콘과 같아야 합니다.
+1. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)에 ① mRNA FASTA, ② Forward, ③ Reverse, ⑤ gDNA FASTA를 넣고 결합 온도는 60 °C 그대로 **PCR 돌리기**를 누릅니다.
+2. **가상 젤**을 봅니다.
+   - cDNA 레인에 밴드가 하나인가? 크기가 Step 8의 앰플리콘과 같은가?
+   - gDNA 레인에 밴드가 있는가? 그 이유는 1-10의 표에 있습니다.
+   - NTC 레인이 깨끗한가?
 3. **Tm 곡선**(melt curve)에서 봉우리가 하나인지, 산물의 Tm이 몇 도인지 봅니다.
 4. 결합 온도를 **70 °C**로 바꿔 다시 돌립니다. 밴드가 어떻게 되는가? 이번에는 **50 °C**로. 어떤 경고가 뜨는가?
 5. Reverse 칸에 **역상보로 바꾸기 전 서열**(윗가닥 그대로, Primer-BLAST 결과의 Reverse 위치를 서열 뷰어에서 읽은 것)을 넣고 돌립니다. 왜 산물이 생기지 않는가? (Forward와 Reverse 칸을 서로 바꿔 넣는 것은 괜찮습니다. 시험관 안에는 이름표가 없습니다.)
+6. **HBB 예시 넣기**를 누르고 돌립니다. 이 예시의 두 프라이머는 경계에 걸치지 않고 서로 다른 엑손에 있습니다. gDNA 레인의 밴드가 cDNA 레인과 어떻게 다른가?
 
-### Step 9. 제출
+### Step 10. 제출
 
 [기록지](worksheet.md)의 필수 항목을 갖춘 보고서를 사이버캠퍼스에 올립니다. 형식은 기록지에 있습니다.
-
----
-
-## 심화 (수업 후 각자). gDNA가 섞여도 구분할 수 있나?
-
-1-10에서 본 gDNA 오염 문제를 내 프라이머로 직접 확인합니다. 수업 시간에는 하지 않습니다. 오늘 배정되는 유전자는 모두 엑손이 3개 이상이라 누구나 할 수 있습니다.
-
-1. **gDNA 서열 가져오기**: [NCBI Gene](https://www.ncbi.nlm.nih.gov/gene/)에서 내 유전자를 검색해 Homo sapiens 항목을 엽니다. **Genomic regions, transcripts, and products** 그림 오른쪽 위 **Go to nucleotide: FASTA**를 누르면 유전자 구간의 유전체 서열이 열립니다. 전부 복사합니다.
-2. [엑손 찾기](https://jw-huh.github.io/primer-design-lab/align.html)에 ① mRNA FASTA, ② gDNA FASTA, ③④ 내 프라이머를 넣고 **엑손 찾기**를 누릅니다.
-3. 엑손 수, 두 프라이머가 있는 엑손, 사이의 인트론을 확인하고 판정을 읽습니다. 세 가지 중 하나입니다.
-   - 두 프라이머가 **같은 엑손** → gDNA 산물이 같은 크기. 구분 불가.
-   - 사이에 **인트론** → gDNA 산물이 인트론만큼 길다(또는 너무 길어 안 나옴). 구분 가능.
-   - 한 프라이머가 **엑손 경계에 걸침** → gDNA에 붙지 않음. 가장 확실.
-4. [PCR 시뮬레이션](https://jw-huh.github.io/primer-design-lab/pcr.html)의 **심화 · gDNA 서열도 넣기**를 열고 같은 gDNA를 넣어 돌립니다. gDNA 레인에 어떤 밴드가 나오는지, Tm 곡선에서 구분되는지 봅니다.
-5. 구분이 안 되는 설계였다면, Primer-BLAST로 돌아가 **Intron inclusion**(Primer pair must be separated by at least one intron on the corresponding genomic DNA)에 체크하고 다시 돌려 새 쌍을 받아 2–4를 반복합니다.
