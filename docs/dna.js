@@ -43,8 +43,8 @@
 
   // 기본 반응 조건: 일반적인 Taq PCR 버퍼 (KCl 50 mM, MgCl2 1.5 mM, dNTP 각 0.2 mM, 프라이머 0.5 µM)
   var TAQ = { mono: 50, mg: 1.5, dntp: 0.8, primer: 0.5 };
-  // Primer-BLAST(Primer3) 기본 조건
-  var PRIMERBLAST = { mono: 50, mg: 1.5, dntp: 0.6, primer: 0.05 };
+  // 설계 기준 조건: 프라이머 설계 프로그램들이 Tm을 계산할 때 흔히 쓰는 값 (프라이머 50 nM)
+  var DESIGN = { mono: 50, mg: 1.5, dntp: 0.6, primer: 0.05 };
 
   function tmNN(s, cond) {
     cond = cond || TAQ;
@@ -243,7 +243,7 @@
 
   root.DNA = {
     clean: clean, check: check, comp: comp, rev: rev, rc: rc, gcPercent: gcPercent,
-    tmWallace: tmWallace, tmBasic: tmBasic, tmNN: tmNN, NN: NN, NN_LABEL: NN_LABEL, TAQ: TAQ, PRIMERBLAST: PRIMERBLAST,
+    tmWallace: tmWallace, tmBasic: tmBasic, tmNN: tmNN, NN: NN, NN_LABEL: NN_LABEL, TAQ: TAQ, DESIGN: DESIGN,
     dimer: dimer, hairpin: hairpin, palindromes: palindromes, qc: qc, dimerPicture: dimerPicture,
     ENZYMES: ENZYMES, findSites: findSites, taqProgram: taqProgram, CODON: CODON, AA3: AA3, translate: translate,
     exonAlign: exonAlign, exonOf: exonOf

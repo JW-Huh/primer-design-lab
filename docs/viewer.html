@@ -42,23 +42,18 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
 <div class="wrap">
   <div class="topbar">
     <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
-    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a><a href="tm.html">Tm 계산기</a><a href="viewer.html" aria-current="page">서열 뷰어</a><a href="check.html">프라이머 점검</a><a href="pcr.html">PCR 시뮬레이션</a><a href="score.html">채점·제출</a></nav>
+    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a><a href="tm.html">Tm 계산기</a><a href="viewer.html" aria-current="page">서열 뷰어</a><a href="check.html">프라이머 점검</a><a href="pcr.html">PCR 시뮬레이션</a><a href="score.html">비교평가</a></nav>
   </div>
 
   <h1>서열 뷰어</h1>
-  <p class="lead">내 유전자 서열을 두 가닥으로 펼쳐 놓고, 프라이머가 어느 가닥 어디에 붙는지, 어떤 구간이 증폭되는지 확인합니다. qPCR 조건도 함께 계산합니다.</p>
+  <p class="lead">내 유전자 서열을 두 가닥으로 펼쳐 놓고, 프라이머가 어느 가닥 어디에 붙는지, 어떤 구간이 증폭되는지 확인합니다.</p>
 
   <section class="panel">
     <label class="field" for="tpl">① 주형 서열 — NCBI의 FASTA를 통째로 복사해서 붙여 넣으세요</label>
     <textarea id="tpl" spellcheck="false" style="min-height:120px" placeholder="&gt;NM_000518.5 Homo sapiens hemoglobin subunit beta (HBB), mRNA&#10;ACATTTGCTTCTGACACAACTGTGTTCACTAGCAACCTCAAACAGACACCATGGTGCATCTGACTCCTGAGGAG..."></textarea>
     <div class="grid">
-      <div>
-        <label class="field">② CDS 위치 (NCBI의 FEATURES → CDS)</label>
-        <div class="cds"><input type="text" id="cs" inputmode="numeric" placeholder="시작"> ~ <input type="text" id="ce" inputmode="numeric" placeholder="끝"></div>
-      </div>
-      <div></div>
-      <div><label class="field" for="f">③ Forward 프라이머 (5′→3′)</label><input type="text" id="f" spellcheck="false" autocomplete="off"></div>
-      <div><label class="field" for="r">④ Reverse 프라이머 (5′→3′)</label><input type="text" id="r" spellcheck="false" autocomplete="off"></div>
+      <div><label class="field" for="f">② Forward 프라이머 (5′→3′)</label><input type="text" id="f" spellcheck="false" autocomplete="off"></div>
+      <div><label class="field" for="r">③ Reverse 프라이머 (5′→3′)</label><input type="text" id="r" spellcheck="false" autocomplete="off"></div>
     </div>
     <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">표시하기</button></div>
     <div id="err" class="msg err" hidden></div>
@@ -71,16 +66,11 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
 
     <div id="checks" class="res-list"></div>
 
-    <h2 style="margin-top:22px">qPCR 조건 (SYBR Green, 2단계 표준 조건)</h2>
-    <table class="prog" id="prog"></table>
-    <p class="hint">qPCR 산물은 짧아서(70–150 bp) 결합과 연장을 60 °C 한 단계로 합칩니다. 그래서 두 프라이머의 Tm이 60 °C 근처여야 하고, 조건표는 프라이머에 따라 바뀌지 않습니다. 마지막 Tm 곡선(melt curve)에서 봉우리가 하나면 산물이 한 종류일 가능성이 높습니다. 시약마다 초기 변성 시간이 다르니(2–10분) 제품 설명서를 따릅니다.</p>
-
     <h2 style="margin-top:22px">두 가닥 서열</h2>
     <div class="legend">
       <span><i class="c-f"></i>Forward와 같은 서열 (→ 읽기, 아랫가닥에 붙음)</span>
       <span><i class="c-r"></i>Reverse와 같은 서열 (← 읽기, 윗가닥에 붙음)</span>
       <span><i class="c-amp"></i>PCR 산물</span>
-      <span><i class="c-cds"></i>CDS</span>
     </div>
     <div class="row" style="margin-bottom:10px">
       <button class="btn small ghost" id="toggle" type="button">전체 서열 보기</button>
@@ -126,11 +116,8 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
     $('err').hidden = true;
 
     var size = rb - fa + 1;
-    var cs = parseInt($('cs').value, 10), ce = parseInt($('ce').value, 10);
-    var hasCds = cs > 0 && ce >= cs && ce <= t.length;
-    if (!hasCds && ($('cs').value.trim() || $('ce').value.trim())) note('warn', 'CDS 위치가 맞지 않아 표시하지 않았어요. 시작 ≥ 1, 끝 ≤ ' + t.length + ', 시작 ≤ 끝이어야 합니다.');
-    var tf = DNA.tmNN(f, DNA.PRIMERBLAST), tr = DNA.tmNN(r, DNA.PRIMERBLAST);
-    state = { t: t, f: f, r: r, fa: fa, fb: fb, ra: ra, rb: rb, size: size, cs: hasCds ? cs - 1 : -1, ce: hasCds ? ce - 1 : -1 };
+    var tf = DNA.tmNN(f, DNA.DESIGN), tr = DNA.tmNN(r, DNA.DESIGN);
+    state = { t: t, f: f, r: r, fa: fa, fb: fb, ra: ra, rb: rb, size: size };
 
     $('checks').innerHTML = '';
     function chk(cls, html) { var d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html; $('checks').appendChild(d); }
@@ -139,27 +126,15 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
     if (tf && tr) {
       var lo = Math.min(tf.tm, tr.tm), hi = Math.max(tf.tm, tr.tm), d = Math.abs(tf.tm - tr.tm);
       var tmOk = lo >= 57 && hi <= 63 && d <= 3;
-      chk(tmOk ? 'ok' : 'err', 'Tm (Primer-BLAST 조건) Forward ' + tf.tm.toFixed(1) + ' °C, Reverse ' + tr.tm.toFixed(1) + ' °C, 차이 ' + d.toFixed(1) + ' °C' +
-        (tmOk ? ' — 60 °C 2단계 조건에 맞습니다.' : ' — qPCR은 두 Tm이 모두 57–63 °C, 차이 3 °C 이내가 좋아요.'));
+      chk(tmOk ? 'ok' : 'err', 'Tm (③ 설계 기준) Forward ' + tf.tm.toFixed(1) + ' °C, Reverse ' + tr.tm.toFixed(1) + ' °C, 차이 ' + d.toFixed(1) + ' °C' +
+        (tmOk ? ' — 결합 온도 60 °C에 맞습니다.' : ' — qPCR은 두 Tm이 모두 57–63 °C, 차이 3 °C 이내가 좋아요.'));
     }
 
-    var cdsText = '입력 안 함';
-    if (hasCds) {
-      if (fa >= cs - 1 && rb <= ce - 1) cdsText = 'PCR 산물이 CDS 안에 있음';
-      else if (rb < cs - 1 || fa > ce - 1) cdsText = 'PCR 산물이 CDS 밖(UTR)에 있음';
-      else cdsText = 'PCR 산물이 CDS 경계에 걸침';
-    }
     $('sum').innerHTML =
       box('주형 길이', t.length.toLocaleString() + ' bp', '') +
       box('Forward 결합 위치', (fa + 1) + '–' + (fb + 1), '아랫가닥에 붙어 → 방향으로 연장') +
       box('Reverse 결합 위치', (rb + 1) + '–' + (ra + 1), '윗가닥에 붙어 ← 방향으로 연장') +
-      box('PCR 산물 (앰플리콘)', size.toLocaleString() + ' bp', (fa + 1) + '–' + (rb + 1) + ' · ' + cdsText);
-
-    $('prog').innerHTML = '<tr><th>단계</th><th>온도</th><th>시간</th><th></th></tr>' +
-      '<tr><td>초기 변성 (효소 활성화)</td><td class="m">95 °C</td><td class="m">2분</td><td>1회</td></tr>' +
-      '<tr><td>변성</td><td class="m">95 °C</td><td class="m">15초</td><td rowspan="2">40회 반복</td></tr>' +
-      '<tr><td><b>결합 + 연장</b> (형광 측정)</td><td class="m"><b>60 °C</b></td><td class="m"><b>1분</b></td></tr>' +
-      '<tr><td>Tm 곡선 (melt curve)</td><td class="m">65 → 95 °C</td><td class="m">0.5 °C씩</td><td>1회</td></tr>';
+      box('PCR 산물 (앰플리콘)', size.toLocaleString() + ' bp', (fa + 1) + '–' + (rb + 1));
 
     $('amp').textContent = t.substring(fa, rb + 1);
     $('out').hidden = false;
@@ -185,7 +160,6 @@ table.prog td.m { font-family: var(--font-mono); white-space: nowrap; }
     var s = state, html = '', cur = null, buf = '';
     for (var i = a; i < b; i++) {
       var c = [];
-      if (s.cs >= 0 && i >= s.cs && i <= s.ce) c.push('c-cds');
       if (i >= s.fa && i <= s.rb) c.push('c-amp');
       if (strand === 'top' && i >= s.fa && i <= s.fb) c = ['c-f'];
       if (strand === 'bot' && i >= s.ra && i <= s.rb) c = ['c-r'];

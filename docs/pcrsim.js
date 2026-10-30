@@ -6,7 +6,10 @@
  *  - 3′ 끝 불일치에 따른 연장 효율: Kwok et al. 1990 (Nucleic Acids Res), Stadhouders et al. 2010 (J Mol Diagn).
  *  - 비특이 결합 후보 찾기: 3′ 끝 짧은 조각이 맞는 자리를 먼저 찾고 전체 결합을 계산 (MFEprimer, Qu et al. 2012의 방식).
  *  - 혼성화 속도: k_on ≈ 10^6 M⁻¹s⁻¹ (Wetmur 1991).
- *  - 중합효소 속도: Taq 약 60 nt/s (70 °C), 24 nt/s (55 °C) (Innis et al. 1988, PNAS)의 70%를 실효값으로 씀 (72 °C에서 약 2.6 kb/분).
+ *  - 중합효소 속도: Taq 약 60 nt/s (70 °C), 24 nt/s (55 °C) (Innis et al. 1988, PNAS)의 35%를 실효값으로 씀 (72 °C에서 약 1.3 kb/분, "1 kb당 1분" 관행에 가까움).
+ *  - 변성: 산물 Tm보다 충분히 뜨거워야 하고, 길수록 가닥이 다 떨어지는 데 시간이 더 걸린다고 봄.
+ *  - 나머지 전사체(약 5×10^7 nt)·유전체(3×10^9 nt)의 무작위 결합: 3′ 끝 8–16 nt가 우연히 맞는 자리 수(4^-k)와
+ *    그 결합 세기로 계산해, 결합 온도가 낮을 때 여러 크기 산물(번짐)이 생기게 함.
  *  - 사이클마다 증폭 효율이 프라이머 결합·연장·변성에 따라 정해지고, 산물이 쌓이면 효소·프라이머가 모자라 평탄해지는 모형
  *    (Mehra & Hu 2005; Gevertz et al. 2005, Biotechnol Bioeng).
  *  - 배경 서열: NCBI BLAST(refseq_rna, 사람)로 찾은 다른 유전자 전사체, 흔한 전사체, 유전체 구간 (pcr-bg.js).
@@ -19,7 +22,7 @@
   var P0 = C * 20e-6 * 6.022e23;          // 20 µL 반응액의 프라이머 분자 수 (약 3 × 10^12)
   var MMAX = 2.8e14;                      // 쌓일 수 있는 이중가닥 DNA 최대량 (bp 합, 약 300 ng)
   var KON = 1e6;
-  var COPIES = { cdna: 1e4, gdna: 3000, contam: 30 };
+  var COPIES = { cdna: 3000, gdna: 3000, contam: 30 };
   var MM = [0, -1.6];
   var COMP = { A: 'T', T: 'A', G: 'C', C: 'G' };
   var DEFAULT = { initT: 95, initS: 120, denT: 95, denS: 15, annT: 60, annS: 60, twoStep: true, extT: 72, extS: 30, cycles: 40 };
@@ -32,13 +35,20 @@
   function duplex(p, s) {
     var L = p.length, m = new Array(L), i, mis = 0;
     for (i = 0; i < L; i++) { m[i] = p[i] === s[i] && isB(p[i]); if (!m[i]) mis++; }
-    var i0 = 0; while (i0 < L && !m[i0]) i0++;
     var i1 = L - 1; while (i1 >= 0 && !m[i1]) i1--;
-    if (i1 - i0 < 7) return null;
-    var dH = 0, dS = 0;
-    for (i = i0; i < i1; i++) { var v = (m[i] && m[i + 1]) ? NN[p.substr(i, 2)] : MM; dH += v[0]; dS += v[1]; }
-    var a = initP(p[i0]), b = initP(p[i1]);
-    dH += a[0] + b[0]; dS += a[1] + b[1] + 0.368 * (i1 - i0) * LNNA;
+    if (i1 < 7) return null;
+    // 3′ 쪽 끝(i1)에서 시작해 5′ 쪽으로 늘려 가며 가장 안정한 구간을 고른다.
+    // 5′ 쪽에 틀린 염기가 몰려 있으면 그 부분은 붙지 않고 떠 있는 것으로 본다.
+    var best = null, h = 0, sS = 0, Tref = 328.15;
+    for (i = i1 - 1; i >= 0; i--) {
+      var v = (m[i] && m[i + 1]) ? NN[p.substr(i, 2)] : MM; h += v[0]; sS += v[1];
+      if (!m[i] || i1 - i < 7) continue;
+      var a = initP(p[i]), b = initP(p[i1]);
+      var dHi = h + a[0] + b[0], dSi = sS + a[1] + b[1] + 0.368 * (i1 - i) * LNNA, g = dHi - Tref * dSi / 1000;
+      if (!best || g < best.g) best = { g: g, dH: dHi, dS: dSi };
+    }
+    if (!best) return null;
+    var dH = best.dH, dS = best.dS;
     var mm3 = [];
     for (i = 1; i <= 5 && i <= L; i++) if (!m[L - i]) mm3.push(i);
     return { dH: dH, dS: dS, mis: mis, mm3: mm3, m: m };
@@ -88,17 +98,66 @@
     for (var x = 0; x < seg.length - 1; x++) { var v = NN[seg.substr(x, 2)]; dH += v[0]; dS += v[1]; }
     var i1 = initP(seg[0]), i2 = initP(seg[seg.length - 1]);
     dH += i1[0] + i2[0]; dS += i1[1] + i2[1] + 0.368 * (seg.length - 1) * LNNA;
-    return { run: d.run, dH: dH, dS: dS, dG: dG(dH, dS, T), theta: theta(dH, dS, T), size: a.length + b.length - d.run, info: d };
+    var out = { run: d.run, dH: dH, dS: dS, dG: dG(dH, dS, T), theta: theta(dH, dS, T), size: a.length + b.length - d.run, info: d };
+    // 틀린 염기가 섞인 겹침까지: a의 3′ 끝이 b 위 어디에 얹혀도 되고, b가 a의 3′ 끝 너머로 이어져야 연장된다
+    var brc = D.rc(b), La = a.length, Lb = b.length, bestP = out.theta;
+    for (var q = 0; q < Lb - 1; q++) {
+      var s = '';
+      for (var i = 0; i < La; i++) { var j = q - (La - 1 - i); s += j >= 0 ? brc[j] : 'N'; }
+      var dd = duplex(a, s);
+      if (!dd) continue;
+      var th = theta(dd.dH, dd.dS, T) * ext3(a, s, dd.mm3);
+      if (th > bestP) { bestP = th; out.size = La + Lb - 1 - q; }
+    }
+    out.theta = bestP;
+    return out;
   }
 
   // 중합효소 실효 속도 (nt/s)
   var RATE = [[30, 0.5], [37, 1.5], [45, 6], [55, 24], [60, 35], [65, 48], [70, 60], [75, 65], [80, 55], [85, 30], [90, 8], [95, 0]];
   function rate(T) {
-    if (T <= RATE[0][0]) return RATE[0][1] * 0.7;
+    if (T <= RATE[0][0]) return RATE[0][1] * RATE_EFF;
     for (var i = 1; i < RATE.length; i++) if (T <= RATE[i][0]) {
-      var a = RATE[i - 1], b = RATE[i]; return (a[1] + (b[1] - a[1]) * (T - a[0]) / (b[0] - a[0])) * 0.7;
+      var a = RATE[i - 1], b = RATE[i]; return (a[1] + (b[1] - a[1]) * (T - a[0]) / (b[0] - a[0])) * RATE_EFF;
     }
     return 0;
+  }
+  var RATE_EFF = 0.35;   // 72 °C에서 약 21 nt/s (1.3 kb/분). 흔히 쓰는 "1 kb당 1분" 기준에 가깝게
+
+  // 변성: 산물 Tm보다 충분히 뜨거워야 하고, 길수록 다 떨어지는 데 시간이 더 걸린다
+  function denFrac(L, tm, prog) {
+    var tau = 0.4 + L / 250;
+    return (1 / (1 + Math.exp((tm + 1 - prog.denT) / 1.5))) * (1 - Math.exp(-(prog.denS + 0.3) / tau));
+  }
+  function extFrac(L, dist) { return 1 / (1 + Math.pow(L / Math.max(1, dist), 6)); }
+
+  // ── 나머지 전사체·유전체에 대한 무작위 결합 (통계 근사) ──
+  // 실제 서열을 다 넣을 수 없으므로, 크기 B인 무작위 서열에서 프라이머 3′ 끝 k nt가 우연히 맞는 자리 수
+  // n_k = 2B · (3/4) · 4^-k 와 그 k-mer의 결합 비율 θ_k를 곱해 더한다. 결합 온도가 낮을수록 짧은 일치도 붙는다.
+  // cDNA: 서로 다른 전사체 서열 약 5×10^7 nt, 반응 하나에 전사체 약 2×10^8개(평균 2 kb) → 같은 자리 평균 8,000 copies
+  var BG = { cdna: { B: 5e7, c: 8000 }, gdna: { B: 3e9 } };
+  // 3′ 끝 k nt가 맞고 그 앞은 무작위(4분의 1 확률로 맞음)인 자리를 뽑아 결합 비율의 평균을 낸다.
+  // 결합 온도가 낮으면 틀린 염기가 몇 개 섞인 자리도 붙기 때문에 k가 짧은 자리가 크게 늘어난다.
+  var BASES = 'ACGT';
+  function primeP(p, T, unf, kin, B) {
+    var P = 0, L = p.length, h = 0;
+    for (var i = 0; i < L; i++) h = (h * 31 + p.charCodeAt(i)) >>> 0;
+    var rr = rng(h || 1), NS = 80;
+    for (var k = 6; k <= Math.min(16, L - 1); k++) {
+      var nk = 2 * B * 0.75 * Math.pow(4, -k), sum = 0;
+      for (var n = 0; n < NS; n++) {
+        var s = '';
+        for (var j = 0; j < L; j++) {
+          if (j >= L - k) s += p[j];
+          else if (j === L - k - 1) { var b; do { b = BASES[(rr() * 4) | 0]; } while (b === p[j]); s += b; }
+          else s += rr() < 0.25 ? p[j] : (function () { var b2; do { b2 = BASES[(rr() * 4) | 0]; } while (b2 === p[j]); return b2; })();
+        }
+        var d = duplex(p, s);
+        if (d) sum += theta(d.dH, d.dS, T, unf);
+      }
+      P += nk * sum / NS;
+    }
+    return P * kin;
   }
   function meltTm(gc, n) { return 81.5 + 0.41 * gc - 675 / n + 16.6 * Math.log(0.15) / Math.LN10; }
 
@@ -160,7 +219,9 @@
     var r = rng(opts.seed == null ? (Date.now() & 0x7fffffff) : opts.seed);
     var bg = bgFor(opts.gene), common = (root.PCR_BG && root.PCR_BG.common) || [];
     var T = prog.annT, kin = 1 - Math.exp(-(prog.annS + 1) * KON * C);
-    var dist = rate(T) * prog.annS + rate((T + prog.denT) / 2) * 0.5 + (prog.twoStep ? 0 : rate(prog.extT) * prog.extS + rate((T + prog.extT) / 2) * 0.5);
+    // 한 사이클에 중합효소가 갈 수 있는 거리: 결합 단계(붙은 뒤 남은 시간의 일부) + 연장 단계 + 온도 올라가는 사이
+    var extS = prog.twoStep ? 0 : prog.extS;
+    var dist = rate(T) * prog.annS * (prog.twoStep || !extS ? 0.8 : 0.3) + rate(prog.extT) * extS + (extS ? rate((T + prog.extT) / 2) * 0.5 : 0) + rate((T + prog.denT) / 2) * 0.3;
 
     function lanesFor() {
       var cd = [{ name: opts.geneLabel || '내 mRNA', kind: 'target', seq: opts.M, copies: COPIES.cdna }];
@@ -192,12 +253,14 @@
         var d = duplex(p.seq, p.seq);
         p.dH = d.dH; p.dS = d.dS; p.theta = theta(d.dH, d.dS, T, p.unf); p.tmMix = tmSite(d.dH, d.dS);
         p.phi = p.theta * kin;
-        var pb = D.tmNN(p.seq, D.PRIMERBLAST); p.tm = pb ? pb.tm : NaN;
+        var pb = D.tmNN(p.seq, D.DESIGN); p.tm = pb ? pb.tm : NaN;
+        p.Pc = primeP(p.seq, T, p.unf, kin, BG.cdna.B);
+        p.Pg = p.Pc * BG.gdna.B / BG.cdna.B;
       });
+      var PcT = prs[0].Pc + prs[1].Pc, PgT = prs[0].Pg + prs[1].Pg;
       // 프라이머 이합체 후보
       var dims = [];
       [[0, 1], [1, 0], [0, 0], [1, 1]].forEach(function (ij) {
-        if (ij[0] === 1 && ij[1] === 0) return; // F/R 조합은 dimer()가 양쪽 3′ 끝을 모두 봄
         var a = prs[ij[0]], b = prs[ij[1]], di = dimerInfo(a.seq, b.seq, T);
         if (!di) return;
         var lam = P0 * di.theta * 1e-6;
@@ -225,22 +288,39 @@
             });
           });
         });
-        return { name: lane.name, templates: lane.templates, products: products };
+        // 무작위 결합에서 생기는 여러 크기의 산물 (번짐): 사이클마다 새로 생기는 수
+        var reach = Math.min(dist, 3000), sm = [];
+        if (reach > 80) {
+          var rate0 = 0;
+          if (lane.name === 'cDNA') {
+            rate0 = BG.cdna.c * PcT * PcT * (reach - 60) / (4 * BG.cdna.B);
+            if (opts.contam && opts.G) rate0 += COPIES.contam * PgT * PgT * (reach - 60) / (4 * BG.gdna.B);
+          } else if (lane.name === 'gDNA') rate0 = COPIES.gdna * PgT * PgT * (reach - 60) / (4 * BG.gdna.B);
+          if (rate0 > 1e-6) {
+            var nb = 10, lo = Math.log(60), hi = Math.log(reach);
+            for (var q = 0; q < nb; q++) {
+              var a1 = Math.exp(lo + (hi - lo) * q / nb), a2 = Math.exp(lo + (hi - lo) * (q + 1) / nb), L = Math.round(Math.sqrt(a1 * a2));
+              sm.push({ size: L, w: (a2 - a1) / (reach - 60), rate: rate0 * (a2 - a1) / (reach - 60), tm: meltTm(48, L), N: 0 });
+            }
+          }
+        }
+        return { name: lane.name, templates: lane.templates, products: products, smearP: sm };
       });
 
       lanes.forEach(function (lane) {
         var noise = Math.exp(0.1 * gauss(r));
-        var pool = { F: P0, R: P0 }, Mtot = 0, curve = [], ps = lane.products;
+        var pool = { F: P0, R: P0 }, Mtot = 0, curve = [], ps = lane.products, sm = lane.smearP;
         ps.forEach(function (p) {
-          var c = 1 / (1 + Math.pow(p.size / Math.max(1, dist), 6));
-          var den = (1 / (1 + Math.exp((p.tm + 3 - prog.denT) / 1.0))) * (1 - Math.exp(-(prog.denS + 1) / 1.5));
+          var c = extFrac(p.size, dist), den = denFrac(p.size, p.tm, prog);
           var Emax = 0.97 * (p.gc > 65 ? 0.9 : 1);
           p.c = c; p.den = den;
           p.E = Emax * Math.sqrt(p.X.phi * p.Y.phi) * c * den;
           p.seed = p.T0 * noise * p.seedPhi * c;
           p.genomic = p.tp.kind === 'gdna' || p.tp.kind === 'gdna-other' || p.tp.kind === 'repeat';
         });
-        var ds = dims.map(function (d) { return { d: d, N: 0, E: 0.9 * Math.sqrt(d.X.phi * d.Y.phi), size: d.size, tm: meltTm(d.gc, d.size), X: d.X, Y: d.Y }; });
+        var ePerf = Math.sqrt(prs[0].phi * prs[1].phi);
+        sm.forEach(function (x) { x.E = 0.95 * ePerf * extFrac(x.size, dist) * denFrac(x.size, x.tm, prog); });
+        var ds = dims.map(function (d) { var tm = meltTm(d.gc, d.size); return { d: d, N: 0, E: 0.9 * Math.sqrt(d.X.phi * d.Y.phi) * extFrac(d.size, dist) * denFrac(d.size, tm, prog), size: d.size, tm: tm, X: d.X, Y: d.Y }; });
         for (var k = 1; k <= prog.cycles; k++) {
           var A = 1 - Math.exp(-(prog.initS + (k - 1) * prog.denS) / 40);
           var s = Math.max(0, 1 - Mtot / MMAX);
@@ -253,12 +333,16 @@
             var pf = Math.min(pool[x.X.name], pool[x.Y.name]) / P0;
             return x.N * x.E * A * s * pf + poisson(x.d.lam * A * s * pf, r);
           });
+          var pfs = Math.min(pool.F, pool.R) / P0;
+          var sg = sm.map(function (x) { return (x.N * x.E + x.rate * noise * (k === 1 ? gDen : 1)) * A * s * pfs; });
           ps.forEach(function (p, i) { p.N += gains[i]; pool[p.X.name] -= gains[i]; pool[p.Y.name] -= gains[i]; });
           ds.forEach(function (x, i) { x.N += dg[i]; pool[x.X.name] -= dg[i]; pool[x.Y.name] -= dg[i]; });
+          sm.forEach(function (x, i) { x.N += sg[i]; pool.F -= sg[i]; pool.R -= sg[i]; });
           pool.F = Math.max(0, pool.F); pool.R = Math.max(0, pool.R);
           Mtot = 0;
           ps.forEach(function (p) { Mtot += p.N * p.size; });
           ds.forEach(function (x) { Mtot += x.N * x.size; });
+          sm.forEach(function (x) { Mtot += x.N * x.size; });
           curve.push(Mtot);
         }
         // 형광 (ΔRn): 이중가닥 DNA 양에 비례 + 바탕 잡음
@@ -277,6 +361,8 @@
         ps.forEach(function (p) { if (p.N > 0) lane.bands.push({ size: p.size, ng: p.N * p.size * 650 / 6.022e23 * 1e9 * 0.25, tm: p.tm, p: p }); });
         ds.forEach(function (x) { if (x.N > 0) lane.bands.push({ size: x.size, ng: x.N * x.size * 650 / 6.022e23 * 1e9 * 0.25, tm: x.tm, dimer: x }); });
         lane.bands = mergeBands(lane.bands);
+        lane.smear = sm.map(function (x) { return { size: x.size, ng: x.N * x.size * 650 / 6.022e23 * 1e9 * 0.25, tm: x.tm }; });
+        lane.smearNg = lane.smear.reduce(function (a, b) { return a + b.ng; }, 0);
       });
       out.pairs.push({ name: pair.name, F: pair.F, R: pair.R, primers: prs, dimers: dims, lanes: lanes });
     });

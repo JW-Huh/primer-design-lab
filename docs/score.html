@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(a&&a.host&&a.host!==location.host){a.target='_blank';a.rel='noopener';}});</script>
-<title>프라이머 채점</title>
+<title>프라이머 비교평가</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap">
@@ -35,11 +35,11 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
 <div class="wrap">
   <div class="topbar">
     <a class="home" href="index.html"><img src="chacha.png" alt="">프라이머 설계 실습</a>
-    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="check.html">프라이머 점검</a><a href="pcr.html">PCR 시뮬레이션</a><a href="score.html" aria-current="page">채점·제출</a></nav>
+    <nav class="nav"><a href="pinball.html">유전자 핀볼</a><a href="align.html">엑손 찾기</a><a href="revcomp.html">역상보</a><a href="tm.html">Tm 계산기</a><a href="viewer.html">서열 뷰어</a><a href="check.html">프라이머 점검</a><a href="pcr.html">PCR 시뮬레이션</a><a href="score.html" aria-current="page">비교평가</a></nav>
   </div>
 
-  <h1>프라이머 채점·제출</h1>
-  <p class="lead">내가 설계한 프라이머 한 쌍을 100점 만점으로 채점합니다. 제출하면 그 쌍으로 확정되고, Primer-BLAST가 열려 컴퓨터가 설계한 쌍과 비교할 수 있습니다.</p>
+  <h1>프라이머 비교평가</h1>
+  <p class="lead">내가 설계한 프라이머 한 쌍을 100점 만점으로 평가합니다. 이 쌍으로 확정하면 같은 유전자에 대해 컴퓨터가 설계한 쌍이 나오고, 두 쌍을 항목별로, 같은 젤에서 비교합니다.</p>
 
   <section class="panel">
     <div class="grid" style="margin-top:0">
@@ -48,72 +48,59 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
       <div><label class="field" for="fa">③ 내 Forward (5′→3′)</label><input type="text" id="fa" spellcheck="false" autocomplete="off"></div>
       <div><label class="field" for="ra">④ 내 Reverse (5′→3′)</label><input type="text" id="ra" spellcheck="false" autocomplete="off"></div>
     </div>
-    <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">채점하기</button></div>
+    <div class="row" style="margin-top:14px"><button class="btn" id="go" type="button">평가하기</button></div>
     <div id="err" class="msg err" hidden></div>
   </section>
 
   <section class="panel" id="out" hidden>
     <div class="total"><span class="n" id="tot"></span><span id="grade"></span></div>
     <div class="tw"><table class="t" id="tbl"></table></div>
-    <p class="hint">시뮬레이션 항목은 기본 프로그램(95 °C 15초 / 60 °C 60초, 40 사이클, 유전체 DNA 조금 섞임)으로 계산합니다.</p>
+    <p class="hint">시뮬레이션 항목은 모든 학생에게 같은 표준 qPCR 프로그램으로 계산합니다.</p>
 
-    <div id="submitBox">
-      <h2 style="margin-top:20px">제출</h2>
-      <p style="margin:0">제출하면 이 쌍으로 확정되고 바꿀 수 없습니다. 제출 기록은 보고서에 그대로 옮깁니다.</p>
-      <div class="row" style="margin-top:10px"><button class="btn" id="submit" type="button">이 쌍으로 제출하기</button></div>
+    <div id="lockBox">
+      <h2 style="margin-top:20px">확정</h2>
+      <p style="margin:0">확정하면 이 쌍은 바꿀 수 없고, 컴퓨터가 설계한 쌍이 나옵니다. 확정 기록은 보고서에 그대로 옮깁니다.</p>
+      <div class="row" style="margin-top:10px"><button class="btn" id="lock" type="button">이 쌍으로 확정하기</button></div>
     </div>
   </section>
 
   <section class="panel" id="after" hidden>
-    <h2>제출 기록</h2>
+    <h2>확정 기록</h2>
     <div class="record" id="record"></div>
 
-    <h2 style="margin-top:22px">Primer-BLAST로 비교하기</h2>
-    <ol class="steps">
-      <li><a id="pblink" href="https://www.ncbi.nlm.nih.gov/tools/primer-blast/">Primer-BLAST</a>를 엽니다.</li>
-      <li><b>PCR Template</b>에 내 RefSeq 번호(<span class="mono" id="nm"></span>)를 넣습니다.</li>
-      <li><b>PCR product size</b>를 Min <span class="mono">70</span>, Max <span class="mono">150</span>으로 바꿉니다.</li>
-      <li><b>Exon junction span</b>을 <span class="mono">Primer must span an exon-exon junction</span>으로 바꿉니다.</li>
-      <li><b>Get Primers</b>를 누릅니다. "highly similar" 화면이 나오면 내 유전자의 다른 버전을 모두 체크하고 Submit.</li>
-      <li><b>Primer pair 1</b>의 두 서열을 아래에 넣습니다.</li>
-    </ol>
-    <div class="grid">
-      <div><label class="field" for="fb">Primer-BLAST Forward (5′→3′)</label><input type="text" id="fb" spellcheck="false" autocomplete="off"></div>
-      <div><label class="field" for="rb">Primer-BLAST Reverse (5′→3′)</label><input type="text" id="rb" spellcheck="false" autocomplete="off"></div>
-    </div>
-    <div class="row" style="margin-top:12px"><button class="btn" id="goB" type="button">두 쌍 비교하기</button><a class="btn ghost" id="toPcr" href="pcr.html#compare" hidden>PCR 시뮬레이션에서 두 쌍 같이 돌리기</a></div>
-    <div id="errB" class="msg err" hidden></div>
+    <h2 style="margin-top:22px">컴퓨터가 설계한 쌍과 비교</h2>
+    <div id="refInfo"></div>
     <div class="tw"><table class="t" id="cmp"></table></div>
+    <div class="row" style="margin-top:12px"><a class="btn" id="toPcr" href="pcr.html#compare" hidden>PCR 시뮬레이션에서 두 쌍 같이 돌리기</a></div>
 
-    <div class="row" style="margin-top:22px"><button class="btn small ghost" id="reset" type="button">제출 기록 지우기</button><button class="btn small" id="reset2" type="button" hidden style="background:var(--red)">정말 지우기</button></div>
+    <div class="row" style="margin-top:22px"><button class="btn small ghost" id="reset" type="button">확정 기록 지우기</button><button class="btn small" id="reset2" type="button" hidden style="background:var(--red)">정말 지우기</button></div>
   </section>
 
   <section class="panel">
-    <h2>채점 기준</h2>
-    <p style="margin:0; font-size:14.5px">Primer3 기본값, qPCR 보고 지침(MIQE), Primer-BLAST의 특이성 판정, 이 실습의 PCR 시뮬레이션 결과를 합쳐 만든 기준입니다. 실제 실험에서 좋은 프라이머인지는 효율(희석 계열)과 Tm 곡선으로 다시 확인해야 합니다.</p>
+    <h2>평가 기준</h2>
+    <p style="margin:0; font-size:14.5px">qPCR 프라이머 설계에서 널리 쓰는 기준(길이, GC, Tm, 3′ 끝, 2차 구조, 앰플리콘 길이)과 qPCR 보고 지침(MIQE), 이 실습의 PCR 시뮬레이션 결과를 합쳐 만든 기준입니다. 실제 실험에서 좋은 프라이머인지는 효율(희석 계열)과 Tm 곡선으로 다시 확인해야 합니다.</p>
     <ul class="refs">
-      <li>Untergasser A et al. (2012) Nucleic Acids Res 40:e115 (Primer3)</li>
       <li>Bustin SA et al. (2009) Clin Chem 55:611 (MIQE)</li>
-      <li>Ye J et al. (2012) BMC Bioinformatics 13:134 (Primer-BLAST)</li>
-      <li>Thornton B, Basu C (2011) Biochem Mol Biol Educ 39:145 · qPCR 프라이머 설계 실습</li>
+      <li>SantaLucia J (1998) PNAS 95:1460 · nearest-neighbor Tm</li>
     </ul>
   </section>
 
-  <footer class="foot">모든 계산은 이 브라우저 안에서만 이루어지고, 입력한 서열과 제출 기록은 이 브라우저에만 저장됩니다.</footer>
+  <footer class="foot">모든 계산은 이 브라우저 안에서만 이루어지고, 입력한 서열과 확정 기록은 이 브라우저에만 저장됩니다.</footer>
 </div>
 
 <script src="dna.js"></script>
 <script src="pcr-bg.js"></script>
 <script src="pcrsim.js"></script>
+<script src="ref-pairs.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var KEY = 'pdl-score', SEED = 20261030, VIS = PCRSIM.VISIBLE_NG;
+  var KEY = 'pdl-compare', SEED = 20261030, VIS = PCRSIM.VISIBLE_NG;
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; } }
   function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
 
-  // 한 쌍 채점. 반환: { fatal, total, items:[{name, rule, value, pts, max}] }
+  // 한 쌍 평가. 반환: { fatal, total, items:[{name, rule, value, pts, max}] }
   function score(mRaw, M, G, F, R) {
     if (!F || !R) return { fatal: 'Forward와 Reverse를 모두 넣어 주세요.' };
     var e = DNA.check(F) || DNA.check(R); if (e) return { fatal: '프라이머: ' + e };
@@ -133,8 +120,8 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     }
     per('길이', '18–24 nt', 8, function (s) { var L = s.length; return [L + ' nt', L >= 18 && L <= 24 ? 4 : (L >= 16 && L <= 28 ? 2 : 0)]; });
     per('GC 비율', '40–60%', 8, function (s) { var g = DNA.gcPercent(s); return [g.toFixed(0) + '%', g >= 40 && g <= 60 ? 4 : (g >= 35 && g <= 65 ? 2 : 0)]; });
-    var tms = pr.map(function (x) { return DNA.tmNN(x.s, DNA.PRIMERBLAST).tm; });
-    per('Tm', '58–62 °C (Primer-BLAST 조건 NN)', 10, function (s) { var t = DNA.tmNN(s, DNA.PRIMERBLAST).tm, d = Math.abs(t - 60); return [t.toFixed(1) + ' °C', d <= 2 ? 5 : d <= 3 ? 4 : d <= 5 ? 2 : 0]; });
+    var tms = pr.map(function (x) { return DNA.tmNN(x.s, DNA.DESIGN).tm; });
+    per('Tm', '58–62 °C (③ 설계 기준)', 10, function (s) { var t = DNA.tmNN(s, DNA.DESIGN).tm, d = Math.abs(t - 60); return [t.toFixed(1) + ' °C', d <= 2 ? 5 : d <= 3 ? 4 : d <= 5 ? 2 : 0]; });
     var dt = Math.abs(tms[0] - tms[1]);
     add('Tm 차이', '2 °C 이내', dt.toFixed(1) + ' °C', dt <= 1 ? 6 : dt <= 2 ? 5 : dt <= 3 ? 3 : dt <= 5 ? 1 : 0, 6);
     per('3′ 끝', '마지막 5 nt 중 G/C 1–3개', 6, function (s) { var g = (s.substr(-5).match(/[GC]/g) || []).length; return ['G/C ' + g, g >= 1 && g <= 3 ? 3 : g === 4 ? 1 : g === 0 ? 1 : 0]; });
@@ -176,14 +163,15 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
       if (p.tp.kind === 'target' && p.a.mis === 0 && p.b.mis === 0 && p.X.name !== p.Y.name) tgtNg += x.ng;
       else if (x.ng >= 0.05) { var n = p.tp.kind === 'target' ? '내 mRNA의 다른 자리' : p.tp.contam ? '섞인 유전체' : p.tp.name; others[n] = 1; }
     }); });
+    if (cd.smearNg >= 0.05) { allNg += cd.smearNg; others['여러 크기 비특이 산물'] = 1; }
     var frac = allNg ? tgtNg / allNg : 0;
     add('특이성', 'cDNA 산물이 모두 내 mRNA에서', Math.round(frac * 100) + '%' + (Object.keys(others).length ? ' (그 밖: ' + Object.keys(others).slice(0, 3).join(', ') + ')' : ''), frac >= 0.99 ? 14 : frac >= 0.95 ? 11 : frac >= 0.8 ? 7 : frac >= 0.5 ? 3 : 0, 14);
 
     var sp = 0, sv = [];
-    if (cd.ct && tgtNg >= VIS) { sp += cd.ct <= 23 ? 4 : cd.ct <= 26 ? 3 : cd.ct <= 30 ? 2 : 1; sv.push('cDNA Ct ' + cd.ct.toFixed(1) + (cd.ct > 23 ? ' (늦음)' : '')); } else sv.push('cDNA 산물 없음');
+    if (cd.ct && tgtNg >= VIS) { sp += cd.ct <= 24 ? 4 : cd.ct <= 27 ? 3 : cd.ct <= 31 ? 2 : 1; sv.push('cDNA Ct ' + cd.ct.toFixed(1) + (cd.ct > 24 ? ' (늦음)' : '')); } else sv.push('cDNA 산물 없음');
     if (!ntc.ct) { sp += 6; sv.push('NTC 깨끗'); }
     else { var d = cd.ct ? ntc.ct - cd.ct : 0; sp += d >= 15 ? 4 : d >= 10 ? 2 : 0; sv.push('NTC Ct ' + ntc.ct.toFixed(1)); }
-    add('시뮬레이션', 'cDNA Ct 23 이하, NTC 깨끗', sv.join(', '), sp, 10);
+    add('시뮬레이션', 'cDNA Ct 24 이하, NTC 깨끗', sv.join(', '), sp, 10);
 
     var total = items.reduce(function (a, b) { return a + b.pts; }, 0);
     return { total: total, items: items, gene: gene, size: size, tms: tms };
@@ -195,7 +183,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
   function runA() {
     var mRaw = $('m').value, M = DNA.clean(mRaw), G = DNA.clean($('g').value);
     var e = DNA.check(M); if (e) return failA('mRNA: ' + e);
-    e = DNA.check(G); if (e) return failA('gDNA: ' + (G ? e : 'gDNA 서열을 넣어야 gDNA 구분 항목을 채점할 수 있어요.'));
+    e = DNA.check(G); if (e) return failA('gDNA: ' + (G ? e : 'gDNA 서열을 넣어야 gDNA 구분 항목을 평가할 수 있어요.'));
     var F = DNA.clean($('fa').value), R = DNA.clean($('ra').value);
     var s = score(mRaw, M, G, F, R);
     if (s.fatal) return failA(s.fatal);
@@ -211,32 +199,34 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
   function failA(m) { $('err').innerHTML = m; $('err').hidden = false; $('out').hidden = true; }
 
   function stamp(d) { function z(x) { return (x < 10 ? '0' : '') + x; } return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate()) + ' ' + z(d.getHours()) + ':' + z(d.getMinutes()); }
-  function lock(on) { ['m', 'g', 'fa', 'ra'].forEach(function (id) { $(id).readOnly = on; }); $('go').hidden = on; $('submitBox').hidden = on; }
+  function lock(on) { ['m', 'g', 'fa', 'ra'].forEach(function (id) { $(id).readOnly = on; }); $('go').hidden = on; $('lockBox').hidden = on; }
 
   function showAfter(st) {
-    $('record').textContent = '제출 ' + st.time + '\n유전자 ' + (st.gene || '?') + ' (' + (st.nm || '') + ')\nForward 5′-' + st.A.F + '-3′\nReverse 5′-' + st.A.R + '-3′\n앰플리콘 ' + st.size + ' bp · 점수 ' + st.scoreA + ' / 100';
-    $('nm').textContent = st.nm || 'NM_…';
+    $('record').textContent = '확정 ' + st.time + '\n유전자 ' + (st.gene || '?') + ' (' + (st.nm || '') + ')\nForward 5′-' + st.A.F + '-3′\nReverse 5′-' + st.A.R + '-3′\n앰플리콘 ' + st.size + ' bp · 점수 ' + st.scoreA + ' / 100';
     $('after').hidden = false;
-    if (st.B && st.B.F) { $('fb').value = st.B.F; $('rb').value = st.B.R; }
+    compare(st);
   }
 
-  $('submit').addEventListener('click', function () {
+  $('lock').addEventListener('click', function () {
     if (!cur) return;
     var gene = cur.s.gene, nm = gene ? window.PCR_BG.genes[gene].nm : ((cur.m.split(/\r?\n/)[0].match(/[NX]M_\d+\.\d+/) || [''])[0]);
-    var st = { submitted: true, time: stamp(new Date()), gene: gene, nm: nm, A: { F: cur.F, R: cur.R }, size: cur.s.size, scoreA: cur.s.total, m: cur.m, g: cur.g };
+    var st = { locked: true, time: stamp(new Date()), gene: gene, nm: nm, A: { F: cur.F, R: cur.R }, size: cur.s.size, scoreA: cur.s.total, m: cur.m, g: cur.g };
+    var ref = gene && window.REF_PAIRS && window.REF_PAIRS[gene];
+    if (ref) st.B = { F: ref.F, R: ref.R };
     save(st); lock(true); showAfter(st);
     $('after').scrollIntoView({ behavior: 'smooth' });
   });
 
-  $('goB').addEventListener('click', function () {
-    var st = load(); if (!st) return;
-    var M = DNA.clean(st.m), G = DNA.clean(st.g), F = DNA.clean($('fb').value), R = DNA.clean($('rb').value);
+  function compare(st) {
+    if (!st.B) { $('refInfo').innerHTML = '<div class="msg warn">컴퓨터 설계 쌍은 핀볼의 8개 유전자에만 준비되어 있습니다.</div>'; return; }
+    var M = DNA.clean(st.m), G = DNA.clean(st.g), F = st.B.F, R = st.B.R;
     var b = score(st.m, M, G, F, R);
-    if (b.fatal) { $('errB').innerHTML = b.fatal; $('errB').hidden = false; return; }
-    $('errB').hidden = true;
+    if (b.fatal) { $('refInfo').innerHTML = '<div class="msg err">' + b.fatal + '</div>'; return; }
     var a = score(st.m, M, G, st.A.F, st.A.R);
-    st.B = { F: F, R: R }; st.scoreB = b.total; save(st);
-    var h = '<tr><th>항목</th><th>배점</th><th>내 쌍</th><th>Primer-BLAST 쌍</th></tr>';
+    var fa = M.indexOf(F), ra = M.indexOf(DNA.rc(R));
+    $('refInfo').innerHTML = '<div class="record">컴퓨터 설계 쌍 (' + esc(st.gene) + ')\nForward 5′-' + F + '-3′  mRNA ' + (fa + 1) + '–' + (fa + F.length) + '\nReverse 5′-' + R + '-3′  mRNA ' + (ra + R.length) + '–' + (ra + 1) + '\n앰플리콘 ' + b.size + ' bp · 점수 ' + b.total + ' / 100</div>';
+    st.scoreB = b.total; save(st);
+    var h = '<tr><th>항목</th><th>배점</th><th>내 쌍</th><th>컴퓨터 설계 쌍</th></tr>';
     a.items.forEach(function (it, i) {
       var jt = b.items[i];
       h += '<tr><td>' + it.name + '</td><td class="m">' + it.max + '</td><td><span class="p ' + lv(it.pts, it.max) + '">' + it.pts + '</span> <span class="hint">' + esc(it.value) + '</span></td><td><span class="p ' + lv(jt.pts, jt.max) + '">' + jt.pts + '</span> <span class="hint">' + esc(jt.value) + '</span></td></tr>';
@@ -244,7 +234,7 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
     h += '<tr><td><b>합계</b></td><td class="m">100</td><td class="p">' + a.total + '</td><td class="p">' + b.total + '</td></tr>';
     $('cmp').innerHTML = h;
     $('toPcr').hidden = false;
-  });
+  }
 
   $('reset').addEventListener('click', function () { $('reset2').hidden = false; });
   $('reset2').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); });
@@ -252,10 +242,9 @@ ul.refs { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; padding-left
   ['fa', 'ra'].forEach(function (id) { $(id).addEventListener('keydown', function (e) { if (e.key === 'Enter') runA(); }); });
 
   var st = load();
-  if (st && st.submitted) {
+  if (st && st.locked) {
     $('m').value = st.m || ''; $('g').value = st.g || ''; $('fa').value = st.A.F; $('ra').value = st.A.R;
     runA(); lock(true); showAfter(st);
-    if (st.B && st.B.F) $('goB').click();
   }
 })();
 </script>
